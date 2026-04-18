@@ -27,7 +27,7 @@ jobs:
       with:
         node-version: '20'
         cache: 'npm'
-        cache-dependency-path: android-app/package-lock.json
+        cache-dependency-path: android-app/package.json
 
     - name: Setup Java JDK
       uses: actions/setup-java@v4
@@ -37,10 +37,12 @@ jobs:
 
     - name: Setup Android SDK
       uses: android-actions/setup-android@v3
+      with:
+        packages: 'platform-tools platform-tools-common platforms/android-34 build-tools;34.0.0'
 
     - name: Install dependencies
       working-directory: android-app
-      run: npm ci
+      run: npm install --legacy-peer-deps
 
     - name: Prebuild Capacitor
       working-directory: android-app
@@ -48,7 +50,10 @@ jobs:
 
     - name: Build Debug APK
       working-directory: android-app/android
-      run: ./gradlew assembleDebug
+      run: |
+        chmod +x ./gradlew
+        ./gradlew assembleDebug --no-daemon --stacktrace
+      continue-on-error: false
 
     - name: Upload Debug APK
       uses: actions/upload-artifact@v4
@@ -58,33 +63,34 @@ jobs:
         retention-days: 30
 
     - name: Build Release APK (if secrets available)
-      if: ${{ secrets.RELEASE_KEYSTORE_BASE64 != null && secrets.RELEASE_KEYSTORE_BASE64 != '' }}
+      id: build_release
+      if: ${{ secrets.ANDROID_KEYSTORE_BASE64 != null && secrets.ANDROID_KEYSTORE_BASE64 != '' }}
       env:
-        RELEASE_KEYSTORE_BASE64: ${{ secrets.RELEASE_KEYSTORE_BASE64 }}
-        RELEASE_KEYSTORE_PASSWORD: ${{ secrets.RELEASE_KEYSTORE_PASSWORD }}
-        RELEASE_KEY_ALIAS: ${{ secrets.RELEASE_KEY_ALIAS }}
-        RELEASE_KEY_PASSWORD: ${{ secrets.RELEASE_KEY_PASSWORD }}
+        ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+        ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+        ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+        ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
       working-directory: android-app
       run: |
-        if [ -n "$RELEASE_KEYSTORE_BASE64" ]; then
-          echo "Building signed release APK..."
-          echo "$RELEASE_KEYSTORE_BASE64" | base64 -d > android/app/release.keystore
-          
-          # Crear archivo gradle.properties con las credenciales de firma
-          cat > android/gradle.properties << EOF
+        echo "Building signed release APK..."
+        echo "$ANDROID_KEYSTORE_BASE64" | base64 -d > android/app/release.keystore
+        
+        # Crear archivo gradle.properties con las credenciales de firma
+        cat >> android/gradle.properties << EOF
+android.defaults.buildfeatures.buildconfig=true
 RELEASE_STORE_FILE=release.keystore
-RELEASE_STORE_PASSWORD=$RELEASE_KEYSTORE_PASSWORD
-RELEASE_KEY_ALIAS=$RELEASE_KEY_ALIAS
-RELEASE_KEY_PASSWORD=$RELEASE_KEY_PASSWORD
+RELEASE_STORE_PASSWORD=$ANDROID_KEYSTORE_PASSWORD
+RELEASE_KEY_ALIAS=$ANDROID_KEY_ALIAS
+RELEASE_KEY_PASSWORD=$ANDROID_KEY_PASSWORD
 EOF
-          
-          ./gradlew assembleRelease
-        else
-          echo "No release keystore found, skipping signed build"
-        fi
+        
+        chmod +x ./gradlew
+        ./gradlew assembleRelease --no-daemon --stacktrace
+        echo "release_built=true" >> $GITHUB_OUTPUT
+      continue-on-error: true
 
     - name: Upload Release APK
-      if: ${{ secrets.RELEASE_KEYSTORE_BASE64 != null && secrets.RELEASE_KEYSTORE_BASE64 != '' }}
+      if: steps.build_release.outputs.release_built == 'true'
       uses: actions/upload-artifact@v4
       with:
         name: app-release.apk

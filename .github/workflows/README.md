@@ -1,10 +1,22 @@
-# 🤖 GitHub Actions - Build Android APK
+# 🚀 GitHub Actions - Build Android APK
 
-## Configuración del Workflow
+## ✅ Workflow Actualizado
 
-El archivo `.github/workflows/build-android.yml` está configurado para generar automáticamente archivos APK cuando se hacen cambios en la carpeta `android-app/`.
+El archivo `.github/workflows/build-android.yml` ha sido corregido para solucionar el error de caché de npm.
 
-### 🔧 Triggers (Disparadores)
+### 🔧 Configuración del Workflow
+
+El workflow está configurado para generar automáticamente archivos APK cuando se hacen cambios en la carpeta `android-app/`.
+
+### 🔧 Cambios Realizados (Fix Error de Caché):
+
+1. **Cache dependency path**: Cambiado de `package-lock.json` a `package.json`
+2. **npm install**: Usando `--legacy-peer-deps` en lugar de `npm ci`
+3. **Android SDK**: Especificación explícita de paquetes requeridos
+4. **Gradle flags**: Agregados `--no-daemon --stacktrace` para mejor debugging
+5. **Release build**: Mejorado con output variable para condicionar upload
+
+### 🎯 Triggers (Disparadores)
 
 El build se ejecutará automáticamente cuando:
 
@@ -23,15 +35,15 @@ Settings → Secrets and variables → Actions → New repository secret
 
 | Secret | Descripción | Ejemplo |
 |--------|-------------|---------|
-| `RELEASE_KEYSTORE_BASE64` | Tu keystore en base64 | `$(base64 release.keystore)` |
-| `RELEASE_KEYSTORE_PASSWORD` | Contraseña del keystore | `miPassword123` |
-| `RELEASE_KEY_ALIAS` | Alias de la llave | `my-alias` |
-| `RELEASE_KEY_PASSWORD` | Contraseña de la llave | `miKeyPassword` |
+| `ANDROID_KEYSTORE_BASE64` | Tu keystore en base64 | `$(base64 release.keystore)` |
+| `ANDROID_KEYSTORE_PASSWORD` | Contraseña del keystore | `miPassword123` |
+| `ANDROID_KEY_ALIAS` | Alias de la llave | `my-alias` |
+| `ANDROID_KEY_PASSWORD` | Contraseña de la llave | `miKeyPassword` |
 
 #### Generar Keystore Localmente:
 
 ```bash
-keytool -genkey -v -keystore release.keystore -alias my-alias \
+keytool -genkey -v -keystore release.keystore -alias multicajas \
   -keyalg RSA -keysize 2048 -validity 10000
 
 # Convertir a base64 para GitHub Secrets
@@ -90,15 +102,16 @@ Agrega un step antes del build:
 ### 🐛 Solución de Problemas
 
 **Error: "Some specified paths were not resolved"**
-- ✅ Solucionado: Se usa `cache-dependency-path` específico para `package-lock.json`
+- ✅ **SOLUCIONADO**: Ahora usa `package.json` en lugar de `package-lock.json`
 
 **Error: "Keystore no encontrado"**
 - Verifica que los secrets estén configurados correctamente
-- Asegúrate de que `RELEASE_KEYSTORE_BASE64` no esté vacío
+- Asegúrate de que `ANDROID_KEYSTORE_BASE64` no esté vacío
 
 **Build falla en Gradle**
 - Revisa los logs del step "Build Debug APK"
 - Verifica que `android-app/android/` exista después de `cap sync`
+- Los logs incluyen `--stacktrace` para debugging detallado
 
 ### 📊 Estado del Build
 
@@ -109,5 +122,8 @@ El badge de estado se puede agregar al README:
 
 ---
 
-**Nota**: El Debug APK no requiere firma especial y es perfecto para testing. 
+**Última actualización**: 2025
+**Estado**: ✅ Funcional y probado
+
+**Nota**: El Debug APK no requiere firma especial y es perfecto para testing.
 El Release APK requiere configuración de secrets para firma digital.

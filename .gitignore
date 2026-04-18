@@ -1,14 +1,6 @@
 ```
-# Build artifacts
-*.apk
-*.aab
-*.jar
-*.class
-
-# Dependencies
-node_modules/
-.gradle/
-build/
+# Logs and temp files
+*.log
 
 # Environment
 .env
@@ -18,18 +10,56 @@ build/
 # Editors
 .vscode/
 .idea/
-*.swp
-*.swo
 
-# Logs
-*.log
+# Dependencies
+node_modules/
+venv/
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
 
-# Temp files
-*.tmp
+# Build artifacts
+dist/
+build/
+target/
+*.so
+*.dylib
+*.dll
+*.exe
+*.out
+
+# OS generated files
 .DS_Store
 Thumbs.db
 
-# Keystore (if not intended to be committed)
-**/keystore.jks
-**/debug.keystore
+# Coverage reports
+coverage/
+htmlcov/
+*.coverage
+
+# Compressed files
+*.zip
+*.gz
+*.tar
+*.tgz
+*.bz2
+*.xz
+*.7z
+*.rar
+*.zst
+*.lz4
+*.lzh
+*.cab
+*.arj
+*.rpm
+*.deb
+*.Z
+*.lz
+*.lzo
+*.tar.gz
+*.tar.bz2
+*.tar.xz
+*.tar.zst
 ```
