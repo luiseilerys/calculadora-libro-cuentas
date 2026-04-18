@@ -1,9 +1,11 @@
 /**
  * Componente de UI - Calculadora de denominaciones
+ * Usa enteros (centavos) para cálculos internos
  */
 
 const CalculatorUI = {
     currentTotal: 0,
+    currentTotalCents: 0,
 
     /**
      * Construye la tabla de denominaciones en el DOM
@@ -49,26 +51,31 @@ const CalculatorUI = {
     updateCalculatorUI(box) {
         if (!box) return;
 
-        let total = 0;
+        let totalCents = 0;
         let totalBills = 0;
 
         for (let d of Config.denominations) {
             const q = box.quantities[d] || 0;
-            total += d * q;
+            const denomCents = Utils.dollarsToCents(d);
+            const subtotalCents = denomCents * q;
+            
+            totalCents += subtotalCents;
             totalBills += q;
 
             const span = document.getElementById(`subtotal-${d}`);
-            if (span) span.textContent = Utils.formatMoney(d * q);
+            if (span) span.textContent = Utils.formatMoney(subtotalCents, true);
 
             const inp = document.getElementById(`input-${d}`);
             if (inp && inp.value != q) inp.value = q;
         }
 
-        document.getElementById('totalGeneral').textContent = Utils.formatMoney(total);
+        const total = Utils.centsToDollars(totalCents);
+        document.getElementById('totalGeneral').textContent = Utils.formatMoney(totalCents, true);
         document.getElementById('totalBilletes').textContent = totalBills;
         this.currentTotal = total;
+        this.currentTotalCents = totalCents;
 
-        return { total, totalBills };
+        return { total, totalCents, totalBills };
     },
 
     /**
@@ -85,10 +92,17 @@ const CalculatorUI = {
     },
 
     /**
-     * Obtiene el total actual calculado
+     * Obtiene el total actual calculado en dólares
      */
     getCurrentTotal() {
         return this.currentTotal;
+    },
+
+    /**
+     * Obtiene el total actual calculado en centavos
+     */
+    getCurrentTotalCents() {
+        return this.currentTotalCents;
     }
 };
 

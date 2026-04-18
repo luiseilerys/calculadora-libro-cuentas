@@ -1,5 +1,6 @@
 /**
  * Modelo de Caja de Efectivo
+ * Usa enteros (centavos) para evitar errores de punto flotante
  */
 
 class CashBox {
@@ -15,12 +16,19 @@ class CashBox {
     }
 
     /**
-     * Obtiene el balance total de la caja
+     * Obtiene el balance total de la caja en centavos (entero)
+     */
+    getBalanceCents() {
+        return this.transactions.reduce((acc, t) => {
+            return acc + (t.tipo === 'ingreso' ? t.montoCents : -t.montoCents);
+        }, 0);
+    }
+
+    /**
+     * Obtiene el balance total de la caja en dólares (float para display)
      */
     getBalance() {
-        return this.transactions.reduce((acc, t) => {
-            return acc + (t.tipo === 'ingreso' ? t.monto : -t.monto);
-        }, 0);
+        return Utils.centsToDollars(this.getBalanceCents());
     }
 
     /**
@@ -40,6 +48,7 @@ class CashBox {
             id: Utils.generateId(),
             concepto: concepto.trim(),
             monto: monto,
+            montoCents: Utils.dollarsToCents(monto),
             tipo: tipo,
             fechaISO: Utils.getISODate(now),
             fechaDisplay: Utils.getFormattedDate(now)
@@ -65,6 +74,7 @@ class CashBox {
 
         this.transactions[idx].concepto = newConcepto.trim();
         this.transactions[idx].monto = newMonto;
+        this.transactions[idx].montoCents = Utils.dollarsToCents(newMonto);
         this.transactions[idx].tipo = newTipo;
 
         return true;
@@ -88,6 +98,7 @@ class CashBox {
             fecha: Utils.getFormattedDate(),
             tipo: tipo,
             total: total,
+            totalCents: Utils.dollarsToCents(total),
             concepto: concepto.trim(),
             denominationsCount: { ...denominationsCount }
         };
