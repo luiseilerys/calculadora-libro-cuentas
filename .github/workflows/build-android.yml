@@ -26,15 +26,15 @@ jobs:
       uses: actions/setup-node@v4
       with:
         node-version: '20'
-        # Cache disabled - using manual cache strategy below
-        # cache: 'npm'
-        # cache-dependency-path: android-app/package.json
+        # Note: npm cache is handled manually below to avoid lock file issues
 
     - name: Cache npm dependencies
       uses: actions/cache@v4
       id: cache-npm
       with:
-        path: ~/.npm
+        path: |
+          ~/.npm
+          android-app/node_modules
         key: ${{ runner.os }}-npm-${{ hashFiles('android-app/package.json') }}
         restore-keys: |
           ${{ runner.os }}-npm-
@@ -48,21 +48,34 @@ jobs:
     - name: Setup Android SDK
       uses: android-actions/setup-android@v3
       with:
-        packages: 'platform-tools platform-tools-common platforms/android-34 build-tools;34.0.0'
+        packages: 'platform-tools platform-tools-common platforms/android-34 build-tools;34.0.0 cmdline-tools;latest'
 
     - name: Install dependencies
       working-directory: android-app
-      run: npm install --legacy-peer-deps
+      run: |
+        echo "Installing npm dependencies..."
+        npm install --legacy-peer-deps
+        echo "Installation complete"
 
     - name: Prebuild Capacitor
       working-directory: android-app
-      run: npx cap sync android
+      run: |
+        echo "Syncing Capacitor..."
+        npx cap sync android
+        echo "Capacitor sync complete"
+      
+    - name: Fix Gradle Wrapper
+      working-directory: android-app/android
+      run: |
+        # Cambiar a gradle-bin en lugar de gradle-all para reducir tamaño
+        sed -i 's/gradle-.*-all.zip/gradle-8.2.1-bin.zip/g' gradle/wrapper/gradle-wrapper.properties
+        cat gradle/wrapper/gradle-wrapper.properties
 
     - name: Build Debug APK
       working-directory: android-app/android
       run: |
         chmod +x ./gradlew
-        ./gradlew assembleDebug --no-daemon --stacktrace
+        ./gradlew assembleDebug --no-daemon --console=plain
       continue-on-error: false
 
     - name: Upload Debug APK
@@ -95,7 +108,7 @@ RELEASE_KEY_PASSWORD=$ANDROID_KEY_PASSWORD
 EOF
         
         chmod +x ./gradlew
-        ./gradlew assembleRelease --no-daemon --stacktrace
+        ./gradlew assembleRelease --no-daemon --console=plain
         echo "release_built=true" >> $GITHUB_OUTPUT
       continue-on-error: true
 
