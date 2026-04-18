@@ -1,0 +1,39 @@
+# .gitignore para proyecto Android de MultiCajas
+
+# Node modules
+node_modules/
+
+# Android Studio
+.idea/
+*.iml
+.DS_Store
+
+# Gradle
+.gradle/
+build/
+*/build/
+local.properties
+
+# APKs generados
+*.apk
+*.ap_
+*.aab
+
+# Logs
+*.log
+
+# Keystore (¡NO subir a Git!)
+*.keystore
+*.jks
+key.properties
+
+# Capacitor
+android/.gradle/
+android/capture.xml
+android/gradlew.bat
+
+# Editor
+.vscode/
+*.swp
+*.swo
+*~

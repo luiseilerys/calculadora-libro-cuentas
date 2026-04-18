@@ -1,0 +1,23 @@
+{
+  "name": "MultiCajas",
+  "version": "1.0.0",
+  "description": "Gestor de Efectivo Profesional - Aplicación Android",
+  "main": "index.js",
+  "scripts": {
+    "start": "npx cap sync",
+    "android": "npx cap open android",
+    "build": "npx cap sync android"
+  },
+  "keywords": [
+    "cash",
+    "manager",
+    "android"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "@capacitor/android": "^6.0.0",
+    "@capacitor/cli": "^6.0.0",
+    "@capacitor/core": "^6.0.0"
+  }
+}

@@ -1,0 +1,402 @@
+/* MultiCajas - Estilos principales */
+
+* { 
+    box-sizing: border-box; 
+    font-family: system-ui, 'Segoe UI', Roboto, sans-serif; 
+}
+
+body { 
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); 
+    min-height: 100vh; 
+    margin: 0; 
+    padding: 20px; 
+    display: flex; 
+    justify-content: center; 
+    align-items: center; 
+}
+
+.app-wrapper { 
+    max-width: 1200px; 
+    width: 100%; 
+    background: rgba(255,255,255,0.1); 
+    backdrop-filter: blur(2px); 
+    border-radius: 2rem; 
+    padding: 1.2rem; 
+    box-shadow: 0 25px 45px rgba(0,0,0,0.3); 
+}
+
+/* Selector de caja */
+.box-selector { 
+    background: #1e293b; 
+    border-radius: 2rem; 
+    padding: 0.8rem 1.2rem; 
+    margin-bottom: 1.2rem; 
+    display: flex; 
+    flex-wrap: wrap; 
+    align-items: center; 
+    gap: 12px; 
+}
+
+.box-selector label { 
+    color: #94a3b8; 
+    font-weight: 600; 
+}
+
+#boxSelect { 
+    background: #0f172a; 
+    color: white; 
+    border: 1px solid #334155; 
+    padding: 8px 16px; 
+    border-radius: 40px; 
+    font-size: 1rem; 
+    min-width: 150px; 
+}
+
+.box-actions { 
+    display: flex; 
+    gap: 8px; 
+    flex-wrap: wrap; 
+}
+
+.small-btn { 
+    background: #334155; 
+    border: none; 
+    padding: 6px 12px; 
+    border-radius: 30px; 
+    color: white; 
+    cursor: pointer; 
+    font-size: 0.8rem; 
+}
+
+.small-btn.danger { 
+    background: #dc2626; 
+}
+
+/* Pestañas */
+.tabs { 
+    display: flex; 
+    gap: 8px; 
+    margin-bottom: 1.5rem; 
+    flex-wrap: wrap; 
+    border-bottom: 2px solid rgba(255,255,255,0.2); 
+    padding-bottom: 6px; 
+}
+
+.tab-btn { 
+    background: transparent; 
+    border: none; 
+    font-size: 1rem; 
+    font-weight: 600; 
+    padding: 8px 18px; 
+    border-radius: 60px; 
+    color: #cbd5e1; 
+    cursor: pointer; 
+    transition: 0.2s; 
+}
+
+.tab-btn.active { 
+    background: #3b82f6; 
+    color: white; 
+}
+
+.tab-content { 
+    display: none; 
+    animation: fade 0.2s ease; 
+}
+
+.tab-content.active { 
+    display: block; 
+}
+
+@keyframes fade { 
+    from { opacity: 0; } 
+    to { opacity: 1; } 
+}
+
+/* Balance */
+.balance-card { 
+    background: #0f172a; 
+    border-radius: 2rem; 
+    padding: 1rem 1.5rem; 
+    margin-bottom: 1.8rem; 
+    text-align: center; 
+    border: 1px solid #334155; 
+}
+
+.balance-amount { 
+    font-size: 2.5rem; 
+    font-weight: 800; 
+}
+
+.balance-amount.positive { 
+    color: #a3e635; 
+}
+
+.balance-amount.negative { 
+    color: #f87171; 
+}
+
+/* Tablas de denominaciones */
+.denom-table { 
+    width: 100%; 
+    border-collapse: collapse; 
+    margin-bottom: 1rem; 
+    color: #e2e8f0; 
+}
+
+.denom-table th, .denom-table td { 
+    padding: 8px; 
+    text-align: center; 
+    border-bottom: 1px solid #334155; 
+}
+
+.denom-table input { 
+    width: 80px; 
+    padding: 6px; 
+    border-radius: 20px; 
+    background: #0f172a; 
+    color: white; 
+    border: 1px solid #475569; 
+    text-align: center; 
+}
+
+/* Panel de totales */
+.totals-panel { 
+    display: flex; 
+    gap: 1rem; 
+    background: #0f172a; 
+    border-radius: 1.2rem; 
+    padding: 1rem; 
+    margin-bottom: 1rem; 
+    flex-wrap: wrap; 
+}
+
+.total-card { 
+    flex: 1; 
+    text-align: center; 
+    background: #1e293b; 
+    border-radius: 1rem; 
+    padding: 0.5rem; 
+}
+
+/* Botones de acción */
+.action-buttons { 
+    display: flex; 
+    gap: 12px; 
+    flex-wrap: wrap; 
+    margin: 1rem 0; 
+}
+
+.action-btn { 
+    flex: 1; 
+    padding: 12px; 
+    border-radius: 60px; 
+    font-weight: bold; 
+    border: none; 
+    cursor: pointer; 
+}
+
+.action-btn.income { 
+    background: #16a34a; 
+    color: white; 
+}
+
+.action-btn.expense { 
+    background: #dc2626; 
+    color: white; 
+}
+
+.action-btn.clear { 
+    background: #475569; 
+    color: white; 
+}
+
+/* Panel de transferencia */
+.transfer-panel { 
+    background: #1e293b; 
+    border-radius: 1.5rem; 
+    padding: 1.2rem; 
+}
+
+.transfer-panel select, .transfer-panel input { 
+    width: 100%; 
+    padding: 10px; 
+    margin: 8px 0; 
+    border-radius: 30px; 
+    background: #0f172a; 
+    color: white; 
+    border: 1px solid #475569; 
+}
+
+/* Panel de backup */
+.backup-panel { 
+    background: #1e293b; 
+    border-radius: 1.5rem; 
+    padding: 1.5rem; 
+    text-align: center; 
+}
+
+.backup-buttons { 
+    display: flex; 
+    gap: 1rem; 
+    justify-content: center; 
+    flex-wrap: wrap; 
+    margin-top: 1rem; 
+}
+
+/* Listas */
+.transaccion-list, .sesion-list { 
+    background: #0f172a; 
+    border-radius: 1.2rem; 
+    overflow: auto; 
+    max-height: 400px; 
+}
+
+.list-header { 
+    display: grid; 
+    background: #334155; 
+    padding: 8px 12px; 
+    font-weight: 600; 
+    gap: 8px; 
+    position: sticky; 
+    top: 0; 
+}
+
+.list-header { 
+    grid-template-columns: 1.2fr 0.6fr 0.8fr 1fr 0.6fr; 
+}
+
+.sesion-header { 
+    grid-template-columns: 1.2fr 0.8fr 1fr 1.2fr 0.5fr; 
+}
+
+.transaccion-item { 
+    display: grid; 
+    align-items: center; 
+    padding: 10px 12px; 
+    border-bottom: 1px solid #334155; 
+    gap: 8px; 
+    grid-template-columns: 1.2fr 0.6fr 0.8fr 1fr 0.6fr; 
+}
+
+.sesion-item { 
+    display: grid; 
+    align-items: center; 
+    padding: 10px 12px; 
+    border-bottom: 1px solid #334155; 
+    gap: 8px; 
+    grid-template-columns: 1.2fr 0.8fr 1fr 1.2fr 0.5fr; 
+}
+
+/* Badges de tipo */
+.tipo-badge { 
+    display: inline-block; 
+    padding: 2px 8px; 
+    border-radius: 30px; 
+    font-size: 0.7rem; 
+    font-weight: bold; 
+}
+
+.tipo-badge.ingreso { 
+    background: #16a34a; 
+}
+
+.tipo-badge.gasto { 
+    background: #dc2626; 
+}
+
+/* Botones de acción en listas */
+.delete-btn, .edit-btn, .detail-btn { 
+    background: none; 
+    border: none; 
+    cursor: pointer; 
+    font-size: 1rem; 
+    padding: 4px 6px; 
+    border-radius: 30px; 
+}
+
+.delete-btn { 
+    color: #f87171; 
+}
+
+.edit-btn { 
+    color: #60a5fa; 
+}
+
+.detail-btn { 
+    color: #60a5fa; 
+}
+
+/* Modales */
+.modal { 
+    display: none; 
+    position: fixed; 
+    top: 0; 
+    left: 0; 
+    width: 100%; 
+    height: 100%; 
+    background: rgba(0,0,0,0.7); 
+    align-items: center; 
+    justify-content: center; 
+    z-index: 1000; 
+}
+
+.modal-content { 
+    background: #1e293b; 
+    border-radius: 2rem; 
+    padding: 1.5rem; 
+    width: 90%; 
+    max-width: 400px; 
+    color: white; 
+}
+
+.modal-content input, .modal-content select { 
+    width: 100%; 
+    padding: 8px; 
+    margin: 8px 0; 
+    border-radius: 30px; 
+    border: 1px solid #475569; 
+    background: #0f172a; 
+    color: white; 
+}
+
+/* Detalle de denominaciones */
+.denom-detail { 
+    display: flex; 
+    flex-wrap: wrap; 
+    gap: 8px; 
+    margin-top: 10px; 
+}
+
+.denom-chip { 
+    background: #334155; 
+    padding: 4px 8px; 
+    border-radius: 20px; 
+    font-size: 0.8rem; 
+}
+
+/* Footer */
+footer { 
+    text-align: center; 
+    font-size: 0.7rem; 
+    margin-top: 1rem; 
+    color: #94a3b8; 
+}
+
+/* Responsive */
+@media (max-width: 700px) {
+    .list-header, .transaccion-item { 
+        grid-template-columns: 1fr 0.5fr 0.7fr 0.8fr 0.5fr; 
+        font-size: 0.7rem; 
+        gap: 4px; 
+    }
+    
+    .sesion-item { 
+        font-size: 0.7rem; 
+        gap: 4px; 
+    }
+    
+    .denom-table input { 
+        width: 60px; 
+    }
+}

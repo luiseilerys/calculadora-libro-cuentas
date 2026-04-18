@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, maximum-scale=1.0, minimum-scale=1.0">
+    <meta name="theme-color" content="#1e293b">
+    <meta name="description" content="MultiCajas - Gestor de Efectivo Profesional">
+    <title>MultiCajas | Gestor de Efectivo Profesional</title>
+    <link rel="stylesheet" href="https://code.jquery.com/qunit/qunit-2.19.4.css">
+    <link rel="stylesheet" href="styles/main.css">
+</head>
+<body>
+<div class="app-wrapper">
+    <div class="box-selector">
+        <label>📁 Cuenta actual:</label>
+        <select id="boxSelect"></select>
+        <div class="box-actions">
+            <button id="newBoxBtn" class="small-btn">➕ Nueva</button>
+            <button id="renameBoxBtn" class="small-btn">✏️ Renombrar</button>
+            <button id="deleteBoxBtn" class="small-btn danger">🗑️ Eliminar</button>
+        </div>
+    </div>
+    <div class="tabs">
+        <button class="tab-btn active" data-tab="calculator">🧮 Calculadora</button>
+        <button class="tab-btn" data-tab="ledger">📒 Libro cuentas</button>
+        <button class="tab-btn" data-tab="sessions">📊 Sesiones</button>
+        <button class="tab-btn" data-tab="change">🔄 Vuelto</button>
+        <button class="tab-btn" data-tab="transfer">💸 Transferir</button>
+        <button class="tab-btn" data-tab="backup">💾 Backup</button>
+        <button class="tab-btn" data-tab="tests">🧪 Pruebas</button>
+    </div>
+    <div class="balance-card">
+        <div class="balance-amount" id="globalBalance">$0.00</div>
+    </div>
+
+    <!-- Calculadora -->
+    <div id="tab-calculator" class="tab-content active">
+        <div style="background:#1e293b; border-radius:1.5rem; padding:1rem;">
+            <table class="denom-table">
+                <thead><tr><th>Denominación</th><th>Cantidad</th><th>Subtotal</th></tr></thead>
+                <tbody id="denomTableBody"></tbody>
+            </table>
+            <div class="totals-panel">
+                <div class="total-card"><div class="total-label">💰 TOTAL</div><div id="totalGeneral" style="font-size:1.5rem;">$0.00</div></div>
+                <div class="total-card"><div class="total-label">🎴 BILLETES/MONEDAS</div><div id="totalBilletes" style="font-size:1.5rem;">0</div></div>
+            </div>
+            <div class="action-buttons">
+                <button class="action-btn clear" id="clearAllDenoms">🗑️ Limpiar</button>
+                <button class="action-btn income" id="registerIncome">➕ Ingreso</button>
+                <button class="action-btn expense" id="registerExpense">➖ Gasto</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Libro de cuentas -->
+    <div id="tab-ledger" class="tab-content">
+        <div class="transaccion-list">
+            <div class="list-header"><span>Concepto</span><span>Tipo</span><span>Monto</span><span>Fecha y hora</span><span>Acciones</span></div>
+            <div id="transaccionesContainer">Cargando...</div>
+        </div>
+        <button id="loadExampleBtn" class="small-btn" style="margin-top:1rem;">📂 Cargar ejemplo</button>
+    </div>
+
+    <!-- Sesiones -->
+    <div id="tab-sessions" class="tab-content">
+        <div class="sesion-list">
+            <div class="list-header sesion-header"><span>Fecha</span><span>Tipo</span><span>Total</span><span>Concepto</span><span>Detalle</span></div>
+            <div id="sesionesContainer">No hay sesiones.</div>
+        </div>
+    </div>
+
+    <!-- Vuelto -->
+    <div id="tab-change" class="tab-content">
+        <div style="background:#1e293b; border-radius:1.5rem; padding:1rem;">
+            <div><label>💰 Total a pagar:</label><input type="number" id="totalPagar" step="0.01" placeholder="0.00" style="width:100%; padding:10px; margin-top:5px; border-radius:30px;"></div>
+            <div><label>💵 Efectivo entregado:</label><input type="number" id="efectivoEntregado" step="0.01" placeholder="0.00" style="width:100%; padding:10px; margin-top:5px; border-radius:30px;"></div>
+            <button id="calcularVueltoBtn" class="action-btn" style="background:#3b82f6;">Calcular vuelto</button>
+            <div id="vueltoResultado" style="margin-top:1rem; background:#0f172a; border-radius:1rem; padding:1rem;"></div>
+        </div>
+    </div>
+
+    <!-- Transferencias -->
+    <div id="tab-transfer" class="tab-content">
+        <div class="transfer-panel">
+            <h3 style="margin-top:0;">💸 Transferir dinero entre cuentas</h3>
+            <label>📤 Desde:</label>
+            <select id="transferFrom"></select>
+            <label>📥 Hacia:</label>
+            <select id="transferTo"></select>
+            <label>💰 Monto:</label>
+            <input type="number" id="transferAmount" step="0.01" min="0.01" placeholder="0.00">
+            <label>📝 Concepto (opcional):</label>
+            <input type="text" id="transferConcept" placeholder="Ej: Transferencia mensual">
+            <button id="doTransferBtn" class="action-btn" style="background:#8b5cf6; margin-top:1rem;">✅ Realizar transferencia</button>
+        </div>
+    </div>
+
+    <!-- Backup -->
+    <div id="tab-backup" class="tab-content">
+        <div class="backup-panel">
+            <h3>💾 Respaldo completo de datos</h3>
+            <p>Exporta todas tus cuentas, movimientos, sesiones y configuraciones a un archivo JSON.</p>
+            <div class="backup-buttons">
+                <button id="exportBackupBtn" class="action-btn" style="background:#3b82f6;">📤 Exportar datos</button>
+                <label for="importBackupInput" class="action-btn" style="background:#8b5cf6; display:inline-block; text-align:center; cursor:pointer;">📂 Importar datos</label>
+                <input type="file" id="importBackupInput" accept=".json" style="display:none;">
+            </div>
+            <p style="font-size:0.7rem; margin-top:1rem;">⚠️ Al importar, todos los datos actuales serán reemplazados.</p>
+        </div>
+    </div>
+
+    <!-- Pruebas -->
+    <div id="tab-tests" class="tab-content">
+        <div id="qunit"></div>
+        <div id="qunit-fixture" style="display:none;"></div>
+    </div>
+    <footer>✅ Backup completo | Fecha y hora | Transferencias | Offline (sin service worker para evitar errores locales)</footer>
+</div>
+
+<!-- Modales -->
+<div id="editModal" class="modal"><div class="modal-content"><h3>✏️ Editar movimiento</h3><label>Concepto</label><input type="text" id="editConcepto"><label>Monto ($)</label><input type="number" id="editMonto" step="0.01" min="0.01"><label>Tipo</label><select id="editTipo"><option value="ingreso">Ingreso</option><option value="gasto">Gasto</option></select><div style="display:flex; gap:10px; margin-top:1rem;"><button id="saveEditBtn" class="small-btn" style="background:#16a34a;">Guardar</button><button id="cancelEditBtn" class="small-btn">Cancelar</button></div></div></div>
+<div id="sessionModal" class="modal"><div class="modal-content"><h3>📋 Detalle de sesión</h3><p><strong>Concepto:</strong> <span id="modalConcepto"></span></p><p><strong>Total:</strong> <span id="modalTotal"></span></p><p><strong>Desglose:</strong></p><div id="modalDenomDetail" class="denom-detail"></div><button id="closeModalBtn" class="small-btn">Cerrar</button></div></div>
+
+<!-- Scripts modulares -->
+<script src="utils/config.js"></script>
+<script src="utils/helpers.js"></script>
+<script src="core/CashBox.js"></script>
+<script src="services/StorageService.js"></script>
+<script src="services/ChangeCalculator.js"></script>
+<script src="services/BackupService.js"></script>
+<script src="components/CalculatorUI.js"></script>
+<script src="components/LedgerUI.js"></script>
+<script src="components/SessionsUI.js"></script>
+<script src="components/TransferUI.js"></script>
+<script src="components/ChangeUI.js"></script>
+<script src="core/AppManager.js"></script>
+
+<!-- QUnit y tests -->
+<script src="https://code.jquery.com/qunit/qunit-2.19.4.js"></script>
+<script src="tests/tests.js"></script>
+</body>
+</html>
