@@ -26,16 +26,18 @@ jobs:
       uses: actions/setup-node@v4
       with:
         node-version: '20'
-        # No usar cache automático - usaremos cache manual abajo
+        cache: 'npm'
+        cache-dependency-path: android-app/package.json
 
-    - name: Cache npm dependencies
+    - name: Cache npm dependencies (manual fallback)
       uses: actions/cache@v4
-      id: cache-npm
+      id: cache-npm-manual
       with:
         path: ~/.npm
         key: ${{ runner.os }}-npm-${{ hashFiles('android-app/package.json') }}
         restore-keys: |
           ${{ runner.os }}-npm-
+      continue-on-error: true
 
     - name: Setup Java JDK
       uses: actions/setup-java@v4
