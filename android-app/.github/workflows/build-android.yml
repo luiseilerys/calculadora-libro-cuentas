@@ -39,7 +39,7 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
-          cache-dependency-path: '${{ env.APP_DIR }}/package-lock.json'
+          cache-dependency-path: '${{ env.APP_DIR }}/package.json'
 
       - name: Setup Java JDK
         uses: actions/setup-java@v4
@@ -50,14 +50,13 @@ jobs:
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
         with:
-          cmdline-tools-version: 9.0
-          packages: 'platform-tools platform-tools-common platforms/android-34 build-tools;34.0.0 cmd-line-tools;latest'
+          packages: 'platform-tools platform-tools-common platforms/android-34 build-tools;34.0.0'
 
       - name: Install dependencies
         working-directory: ${{ env.APP_DIR }}
         run: |
-          npm ci
-          npx cap sync
+          npm install --legacy-peer-deps
+          npx cap sync android
 
       - name: Create Keystore
         env:
@@ -81,25 +80,27 @@ jobs:
         working-directory: ${{ env.APP_DIR }}/android
         run: |
           cat >> gradle.properties << EOF
-          org.gradle.jvmargs=-Xmx4g -XX:MaxMetaspaceSize=512m -XX:+HeapDumpOnOutOfMemoryError
-          android.useAndroidX=true
-          android.enableJetifier=true
-          EOF
+        org.gradle.jvmargs=-Xmx4g -XX:MaxMetaspaceSize=512m -XX:+HeapDumpOnOutOfMemoryError
+        android.useAndroidX=true
+        android.enableJetifier=true
+        android.defaults.buildfeatures.buildconfig=true
+        EOF
           
           if [ ! -z "${{ secrets.ANDROID_KEYSTORE_PASSWORD }}" ]; then
             cat >> gradle.properties << EOF
-          RELEASE_STORE_FILE=../app/release-key.keystore
-          RELEASE_STORE_PASSWORD=${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
-          RELEASE_KEY_ALIAS=${{ secrets.ANDROID_KEY_ALIAS }}
-          RELEASE_KEY_PASSWORD=${{ secrets.ANDROID_KEY_PASSWORD }}
-          EOF
+        RELEASE_STORE_FILE=../app/release-key.keystore
+        RELEASE_STORE_PASSWORD=${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+        RELEASE_KEY_ALIAS=${{ secrets.ANDROID_KEY_ALIAS }}
+        RELEASE_KEY_PASSWORD=${{ secrets.ANDROID_KEY_PASSWORD }}
+        EOF
           fi
 
       - name: Build Debug APK
         working-directory: ${{ env.APP_DIR }}/android
         run: |
           chmod +x ./gradlew
-          ./gradlew assembleDebug --no-daemon --stacktrace
+          ./gradlew assembleDebug --no-daemon --stacktrace --info
+        continue-on-error: false
 
       - name: Build Release APK (if secrets available)
         id: build_release
