@@ -26,7 +26,7 @@ jobs:
       uses: actions/setup-node@v4
       with:
         node-version: '20'
-        # Note: npm cache is handled manually below to avoid lock file issues
+        cache: ''  # Disable automatic npm cache to avoid lock file issues
 
     - name: Cache npm dependencies
       uses: actions/cache@v4
