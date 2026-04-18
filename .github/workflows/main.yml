@@ -1,0 +1,120 @@
+name: Build Android APK
+
+on:
+  push:
+    branches: [ main, master ]
+    paths:
+      - 'android-app/**'
+      - '.github/workflows/build-android.yml'
+  pull_request:
+    branches: [ main, master ]
+    paths:
+      - 'android-app/**'
+  workflow_dispatch:
+  release:
+    types: [created]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        cache: ''  # Deshabilitar cache automático
+
+    - name: Setup Java JDK
+      uses: actions/setup-java@v4
+      with:
+        distribution: 'temurin'
+        java-version: '17'
+
+    - name: Setup Android SDK
+      uses: android-actions/setup-android@v3
+      with:
+        packages: 'platform-tools platform-tools-common platforms/android-34 build-tools;34.0.0 cmdline-tools;latest'
+
+    - name: Install dependencies
+      working-directory: android-app
+      run: |
+        echo "Installing npm dependencies..."
+        npm install --legacy-peer-deps
+        echo "Installation complete"
+
+    - name: Prebuild Capacitor
+      working-directory: android-app
+      run: |
+        echo "Syncing Capacitor..."
+        npx cap sync android
+        echo "Capacitor sync complete"
+      
+    - name: Fix Gradle Wrapper
+      working-directory: android-app/android
+      run: |
+        # Cambiar a gradle-bin en lugar de gradle-all para reducir tamaño
+        sed -i 's/gradle-.*-all.zip/gradle-8.2.1-bin.zip/g' gradle/wrapper/gradle-wrapper.properties
+        cat gradle/wrapper/gradle-wrapper.properties
+
+    - name: Build Debug APK
+      working-directory: android-app/android
+      run: |
+        chmod +x ./gradlew
+        ./gradlew assembleDebug --no-daemon --console=plain
+      continue-on-error: false
+
+    - name: Upload Debug APK
+      uses: actions/upload-artifact@v4
+      with:
+        name: app-debug.apk
+        path: android-app/android/app/build/outputs/apk/debug/app-debug.apk
+        retention-days: 30
+
+    - name: Build Release APK (if secrets available)
+      id: build_release
+      if: ${{ secrets.ANDROID_KEYSTORE_BASE64 != null && secrets.ANDROID_KEYSTORE_BASE64 != '' }}
+      env:
+        ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+        ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+        ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+        ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+      working-directory: android-app
+      run: |
+        echo "Building signed release APK..."
+        echo "$ANDROID_KEYSTORE_BASE64" | base64 -d > android/app/release.keystore
+        
+        # Crear archivo gradle.properties con las credenciales de firma
+        cat >> android/gradle.properties << EOF
+android.defaults.buildfeatures.buildconfig=true
+RELEASE_STORE_FILE=release.keystore
+RELEASE_STORE_PASSWORD=$ANDROID_KEYSTORE_PASSWORD
+RELEASE_KEY_ALIAS=$ANDROID_KEY_ALIAS
+RELEASE_KEY_PASSWORD=$ANDROID_KEY_PASSWORD
+EOF
+        
+        chmod +x ./gradlew
+        ./gradlew assembleRelease --no-daemon --console=plain
+        echo "release_built=true" >> $GITHUB_OUTPUT
+      continue-on-error: true
+
+    - name: Upload Release APK
+      if: steps.build_release.outputs.release_built == 'true'
+      uses: actions/upload-artifact@v4
+      with:
+        name: app-release.apk
+        path: android-app/android/app/build/outputs/apk/release/app-release.apk
+        retention-days: 30
+
+    - name: Create GitHub Release (on tag)
+      if: github.event_name == 'release'
+      uses: softprops/action-gh-release@v1
+      with:
+        files: |
+          android-app/android/app/build/outputs/apk/debug/app-debug.apk
+          android-app/android/app/build/outputs/apk/release/app-release.apk
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
