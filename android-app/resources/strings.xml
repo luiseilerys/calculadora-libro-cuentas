@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">MultiCajas</string>
+    <string name="title_activity_main">MultiCajas - Gestor de Efectivo</string>
+    <string name="loading">Cargando...</string>
+    <string name="error_general">Ha ocurrido un error</string>
+</resources>

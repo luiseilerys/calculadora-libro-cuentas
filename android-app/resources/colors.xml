@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Colores principales -->
+    <color name="primary">#1e293b</color>
+    <color name="primary_dark">#0f172a</color>
+    <color name="accent">#3b82f6</color>
+    
+    <!-- Colores de UI -->
+    <color name="background">#0f172a</color>
+    <color name="surface">#1e293b</color>
+    <color name="text_primary">#ffffff</color>
+    <color name="text_secondary">#94a3b8</color>
+    
+    <!-- Colores semánticos -->
+    <color name="success">#16a34a</color>
+    <color name="error">#dc2626</color>
+    <color name="warning">#f59e0b</color>
+    <color name="info">#3b82f6</color>
+    
+    <!-- Splash Screen -->
+    <color name="splash_background">#1e293b</color>
+    <color name="splash_spinner">#ffffff</color>
+</resources>
