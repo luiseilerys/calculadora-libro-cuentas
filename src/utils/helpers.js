@@ -4,14 +4,35 @@
 
 const Utils = {
     /**
-     * Formatea un número como moneda USD
+     * Convierte un monto en centavos (entero) a dólares (float para display)
+     * @param {number} cents - Monto en centavos
+     * @returns {number} Monto en dólares
      */
-    formatMoney(val) {
+    centsToDollars(cents) {
+        return cents / 100;
+    },
+
+    /**
+     * Convierte un monto en dólares a centavos (entero)
+     * @param {number} dollars - Monto en dólares
+     * @returns {number} Monto en centavos (redondeado)
+     */
+    dollarsToCents(dollars) {
+        return Math.round(dollars * 100);
+    },
+
+    /**
+     * Formatea un número como moneda USD
+     * @param {number} val - Valor en dólares (puede ser float o entero centavos)
+     * @param {boolean} isCents - Si true, val está en centavos
+     */
+    formatMoney(val, isCents = false) {
+        const amount = isCents ? this.centsToDollars(val) : val;
         return new Intl.NumberFormat('es-ES', { 
             style: 'currency', 
             currency: 'USD', 
             minimumFractionDigits: 2 
-        }).format(val);
+        }).format(amount);
     },
 
     /**

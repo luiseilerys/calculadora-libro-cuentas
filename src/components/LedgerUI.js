@@ -1,5 +1,6 @@
 /**
  * Componente de UI - Libro de cuentas (Ledger)
+ * Usa enteros (centavos) para mostrar montos
  */
 
 const LedgerUI = {
@@ -30,7 +31,7 @@ const LedgerUI = {
                         </span>
                     </div>
                     <div style="${colorStyle}">
-                        ${sign} ${Utils.formatMoney(t.monto)}
+                        ${sign} ${Utils.formatMoney(t.montoCents, true)}
                     </div>
                     <div style="font-size:0.7rem;">
                         ${Utils.escapeHtml(t.fechaDisplay)}
