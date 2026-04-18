@@ -109,6 +109,9 @@ Editar `capacitor.config.json` en la sección `plugins`:
 
 ```
 android-app/
+├── .github/
+│   └── workflows/
+│       └── build-android.yml       # Workflow de GitHub Actions para build automático
 ├── www/                    # Web app (copiada desde src/)
 │   ├── index.html          # Punto de entrada
 │   ├── components/         # Componentes UI
@@ -118,9 +121,14 @@ android-app/
 │   ├── utils/              # Utilidades
 │   └── tests/              # Tests unitarios
 ├── android/                # Proyecto Android (generado por Capacitor)
+├── resources/              # Recursos personalizados
+├── scripts/
+│   └── generate-keystore.sh  # Script para generar keystore firmado
 ├── capacitor.config.json   # Configuración de Capacitor
 ├── package.json            # Dependencias Node.js
-└── README.md               # Este archivo
+├── README.md               # Este archivo
+├── QUICK_START.md          # Guía rápida de inicio
+└── GITHUB_ACTIONS_GUIDE.md # Guía detallada de CI/CD
 ```
 
 ---
@@ -136,6 +144,52 @@ cp -r src/* android-app/www/
 # Sincronizar con Android
 npx cap sync
 ```
+
+---
+
+## 🤖 GitHub Actions - Build Automático en la Nube
+
+Puedes configurar GitHub Actions para construir automáticamente el APK cada vez que hagas push.
+
+### Configurar Workflow
+
+1. El archivo `.github/workflows/build-android.yml` ya está configurado
+2. Ve a **Actions** en tu repositorio de GitHub
+3. Habilita los workflows si es necesario
+
+### Disparadores Automáticos
+
+- ✅ Push a `main` o `master` (solo cambios en `android-app/`)
+- ✅ Pull requests
+- ✅ Manual desde la UI de GitHub Actions
+
+### Secrets Requeridos (para APK firmado)
+
+Configura estos secrets en **Settings → Secrets and variables → Actions**:
+
+| Secret | Descripción |
+|--------|-------------|
+| `ANDROID_KEYSTORE_BASE64` | Tu keystore en base64 |
+| `ANDROID_KEYSTORE_PASSWORD` | Contraseña del keystore |
+| `ANDROID_KEY_ALIAS` | Alias de la clave |
+| `ANDROID_KEY_PASSWORD` | Contraseña de la clave |
+
+### Generar Keystore
+
+Usa el script incluido:
+
+```bash
+cd android-app
+chmod +x scripts/generate-keystore.sh
+./scripts/generate-keystore.sh
+```
+
+El script te guiará paso a paso y generará:
+- `release-key.keystore` - Archivo de firma
+- `release-key.base64` - Para GitHub Secrets
+- `KEYSTORE_INSTRUCTIONS.txt` - Instrucciones detalladas
+
+📖 **Ver guía completa:** [GITHUB_ACTIONS_GUIDE.md](GITHUB_ACTIONS_GUIDE.md)
 
 ---
 

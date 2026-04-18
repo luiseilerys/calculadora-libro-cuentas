@@ -1,40 +1,35 @@
 ```
+# Build artifacts
+*.apk
+*.aab
+*.jar
+*.class
+
 # Dependencies
 node_modules/
-
-# Build artifacts
-dist/
+.gradle/
 build/
-target/
-
-# IDE files
-.vscode/
-.idea/
-*.swp
-*.swo
-*.tmp
 
 # Environment
 .env
 .env.local
 *.env.*
 
+# Editors
+.vscode/
+.idea/
+*.swp
+*.swo
+
 # Logs
 *.log
 
-# Python
-__pycache__/
-*.pyc
-*.pyo
-*.pyd
-
-# Java
-*.class
-*.jar
-*.war
-*.ear
-*.nar
-*.hprof
+# Temp files
+*.tmp
 .DS_Store
 Thumbs.db
+
+# Keystore (if not intended to be committed)
+**/keystore.jks
+**/debug.keystore
 ```
