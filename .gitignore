@@ -1,6 +1,8 @@
 ```
 # Logs and temp files
 *.log
+*.tmp
+*.swp
 
 # Environment
 .env
@@ -16,30 +18,29 @@ node_modules/
 venv/
 .venv/
 __pycache__/
+.mypy_cache/
+.pytest_cache/
+.julia/
+zig*/
+target/
+.gradle/
+
+# Compiled files
 *.pyc
-*.pyo
-*.pyd
+*.class
+*.o
+*.exe
+*.dll
+*.so
+*.a
+*.obj
+*.out
 
 # Build artifacts
 dist/
 build/
-target/
-*.so
-*.dylib
-*.dll
-*.exe
-*.out
-
-# OS generated files
-.DS_Store
-Thumbs.db
-
-# Coverage reports
 coverage/
 htmlcov/
-*.coverage
-
-# Compressed files
 *.zip
 *.gz
 *.tar
@@ -62,4 +63,8 @@ htmlcov/
 *.tar.bz2
 *.tar.xz
 *.tar.zst
+
+# System files
+.DS_Store
+Thumbs.db
 ```
