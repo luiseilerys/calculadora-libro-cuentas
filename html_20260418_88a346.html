@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>MultiCajas | Gestor de Efectivo Profesional</title>
+    <link rel="stylesheet" href="https://code.jquery.com/qunit/qunit-2.19.4.css">
+    <style>
+        * { box-sizing: border-box; font-family: system-ui, 'Segoe UI', Roboto, sans-serif; }
+        body { background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); min-height: 100vh; margin: 0; padding: 20px; display: flex; justify-content: center; align-items: center; }
+        .app-wrapper { max-width: 1200px; width: 100%; background: rgba(255,255,255,0.1); backdrop-filter: blur(2px); border-radius: 2rem; padding: 1.2rem; box-shadow: 0 25px 45px rgba(0,0,0,0.3); }
+        .box-selector { background: #1e293b; border-radius: 2rem; padding: 0.8rem 1.2rem; margin-bottom: 1.2rem; display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
+        .box-selector label { color: #94a3b8; font-weight: 600; }
+        #boxSelect { background: #0f172a; color: white; border: 1px solid #334155; padding: 8px 16px; border-radius: 40px; font-size: 1rem; min-width: 150px; }
+        .box-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+        .small-btn { background: #334155; border: none; padding: 6px 12px; border-radius: 30px; color: white; cursor: pointer; font-size: 0.8rem; }
+        .small-btn.danger { background: #dc2626; }
+        .tabs { display: flex; gap: 8px; margin-bottom: 1.5rem; flex-wrap: wrap; border-bottom: 2px solid rgba(255,255,255,0.2); padding-bottom: 6px; }
+        .tab-btn { background: transparent; border: none; font-size: 1rem; font-weight: 600; padding: 8px 18px; border-radius: 60px; color: #cbd5e1; cursor: pointer; transition: 0.2s; }
+        .tab-btn.active { background: #3b82f6; color: white; }
+        .tab-content { display: none; animation: fade 0.2s ease; }
+        .tab-content.active { display: block; }
+        @keyframes fade { from { opacity: 0; } to { opacity: 1; } }
+        .balance-card { background: #0f172a; border-radius: 2rem; padding: 1rem 1.5rem; margin-bottom: 1.8rem; text-align: center; border: 1px solid #334155; }
+        .balance-amount { font-size: 2.5rem; font-weight: 800; }
+        .balance-amount.positive { color: #a3e635; }
+        .balance-amount.negative { color: #f87171; }
+        .denom-table { width: 100%; border-collapse: collapse; margin-bottom: 1rem; color: #e2e8f0; }
+        .denom-table th, .denom-table td { padding: 8px; text-align: center; border-bottom: 1px solid #334155; }
+        .denom-table input { width: 80px; padding: 6px; border-radius: 20px; background: #0f172a; color: white; border: 1px solid #475569; text-align: center; }
+        .totals-panel { display: flex; gap: 1rem; background: #0f172a; border-radius: 1.2rem; padding: 1rem; margin-bottom: 1rem; flex-wrap: wrap; }
+        .total-card { flex: 1; text-align: center; background: #1e293b; border-radius: 1rem; padding: 0.5rem; }
+        .action-buttons { display: flex; gap: 12px; flex-wrap: wrap; margin: 1rem 0; }
+        .action-btn { flex: 1; padding: 12px; border-radius: 60px; font-weight: bold; border: none; cursor: pointer; }
+        .action-btn.income { background: #16a34a; color: white; }
+        .action-btn.expense { background: #dc2626; color: white; }
+        .action-btn.clear { background: #475569; color: white; }
+        .transfer-panel { background: #1e293b; border-radius: 1.5rem; padding: 1.2rem; }
+        .transfer-panel select, .transfer-panel input { width: 100%; padding: 10px; margin: 8px 0; border-radius: 30px; background: #0f172a; color: white; border: 1px solid #475569; }
+        .backup-panel { background: #1e293b; border-radius: 1.5rem; padding: 1.5rem; text-align: center; }
+        .backup-buttons { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; margin-top: 1rem; }
+        .transaccion-list, .sesion-list { background: #0f172a; border-radius: 1.2rem; overflow: auto; max-height: 400px; }
+        .list-header { display: grid; background: #334155; padding: 8px 12px; font-weight: 600; gap: 8px; position: sticky; top: 0; }
+        .list-header { grid-template-columns: 1.2fr 0.6fr 0.8fr 1fr 0.6fr; }
+        .sesion-header { grid-template-columns: 1.2fr 0.8fr 1fr 1.2fr 0.5fr; }
+        .transaccion-item { display: grid; align-items: center; padding: 10px 12px; border-bottom: 1px solid #334155; gap: 8px; grid-template-columns: 1.2fr 0.6fr 0.8fr 1fr 0.6fr; }
+        .sesion-item { display: grid; align-items: center; padding: 10px 12px; border-bottom: 1px solid #334155; gap: 8px; grid-template-columns: 1.2fr 0.8fr 1fr 1.2fr 0.5fr; }
+        .tipo-badge { display: inline-block; padding: 2px 8px; border-radius: 30px; font-size: 0.7rem; font-weight: bold; }
+        .tipo-badge.ingreso { background: #16a34a; }
+        .tipo-badge.gasto { background: #dc2626; }
+        .delete-btn, .edit-btn, .detail-btn { background: none; border: none; cursor: pointer; font-size: 1rem; padding: 4px 6px; border-radius: 30px; }
+        .delete-btn { color: #f87171; }
+        .edit-btn { color: #60a5fa; }
+        .detail-btn { color: #60a5fa; }
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); align-items: center; justify-content: center; z-index: 1000; }
+        .modal-content { background: #1e293b; border-radius: 2rem; padding: 1.5rem; width: 90%; max-width: 400px; color: white; }
+        .modal-content input, .modal-content select { width: 100%; padding: 8px; margin: 8px 0; border-radius: 30px; border: 1px solid #475569; background: #0f172a; color: white; }
+        .denom-detail { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+        .denom-chip { background: #334155; padding: 4px 8px; border-radius: 20px; font-size: 0.8rem; }
+        footer { text-align: center; font-size: 0.7rem; margin-top: 1rem; color: #94a3b8; }
+        @media (max-width: 700px) {
+            .list-header, .transaccion-item { grid-template-columns: 1fr 0.5fr 0.7fr 0.8fr 0.5fr; font-size: 0.7rem; gap: 4px; }
+            .sesion-item { font-size: 0.7rem; gap: 4px; }
+            .denom-table input { width: 60px; }
+        }
+    </style>
+</head>
+<body>
+<div class="app-wrapper">
+    <div class="box-selector">
+        <label>📁 Cuenta actual:</label>
+        <select id="boxSelect"></select>
+        <div class="box-actions">
+            <button id="newBoxBtn" class="small-btn">➕ Nueva</button>
+            <button id="renameBoxBtn" class="small-btn">✏️ Renombrar</button>
+            <button id="deleteBoxBtn" class="small-btn danger">🗑️ Eliminar</button>
+        </div>
+    </div>
+    <div class="tabs">
+        <button class="tab-btn active" data-tab="calculator">🧮 Calculadora</button>
+        <button class="tab-btn" data-tab="ledger">📒 Libro cuentas</button>
+        <button class="tab-btn" data-tab="sessions">📊 Sesiones</button>
+        <button class="tab-btn" data-tab="change">🔄 Vuelto</button>
+        <button class="tab-btn" data-tab="transfer">💸 Transferir</button>
+        <button class="tab-btn" data-tab="backup">💾 Backup</button>
+        <button class="tab-btn" data-tab="tests">🧪 Pruebas</button>
+    </div>
+    <div class="balance-card">
+        <div class="balance-amount" id="globalBalance">$0.00</div>
+    </div>
+
+    <!-- Calculadora -->
+    <div id="tab-calculator" class="tab-content active">
+        <div style="background:#1e293b; border-radius:1.5rem; padding:1rem;">
+            <table class="denom-table">
+                <thead><tr><th>Denominación</th><th>Cantidad</th><th>Subtotal</th></tr></thead>
+                <tbody id="denomTableBody"></tbody>
+            </table>
+            <div class="totals-panel">
+                <div class="total-card"><div class="total-label">💰 TOTAL</div><div id="totalGeneral" style="font-size:1.5rem;">$0.00</div></div>
+                <div class="total-card"><div class="total-label">🎴 BILLETES/MONEDAS</div><div id="totalBilletes" style="font-size:1.5rem;">0</div></div>
+            </div>
+            <div class="action-buttons">
+                <button class="action-btn clear" id="clearAllDenoms">🗑️ Limpiar</button>
+                <button class="action-btn income" id="registerIncome">➕ Ingreso</button>
+                <button class="action-btn expense" id="registerExpense">➖ Gasto</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Libro de cuentas -->
+    <div id="tab-ledger" class="tab-content">
+        <div class="transaccion-list">
+            <div class="list-header"><span>Concepto</span><span>Tipo</span><span>Monto</span><span>Fecha y hora</span><span>Acciones</span></div>
+            <div id="transaccionesContainer">Cargando...</div>
+        </div>
+        <button id="loadExampleBtn" class="small-btn" style="margin-top:1rem;">📂 Cargar ejemplo</button>
+    </div>
+
+    <!-- Sesiones -->
+    <div id="tab-sessions" class="tab-content">
+        <div class="sesion-list">
+            <div class="list-header sesion-header"><span>Fecha</span><span>Tipo</span><span>Total</span><span>Concepto</span><span>Detalle</span></div>
+            <div id="sesionesContainer">No hay sesiones.</div>
+        </div>
+    </div>
+
+    <!-- Vuelto -->
+    <div id="tab-change" class="tab-content">
+        <div style="background:#1e293b; border-radius:1.5rem; padding:1rem;">
+            <div><label>💰 Total a pagar:</label><input type="number" id="totalPagar" step="0.01" placeholder="0.00" style="width:100%; padding:10px; margin-top:5px; border-radius:30px;"></div>
+            <div><label>💵 Efectivo entregado:</label><input type="number" id="efectivoEntregado" step="0.01" placeholder="0.00" style="width:100%; padding:10px; margin-top:5px; border-radius:30px;"></div>
+            <button id="calcularVueltoBtn" class="action-btn" style="background:#3b82f6;">Calcular vuelto</button>
+            <div id="vueltoResultado" style="margin-top:1rem; background:#0f172a; border-radius:1rem; padding:1rem;"></div>
+        </div>
+    </div>
+
+    <!-- Transferencias -->
+    <div id="tab-transfer" class="tab-content">
+        <div class="transfer-panel">
+            <h3 style="margin-top:0;">💸 Transferir dinero entre cuentas</h3>
+            <label>📤 Desde:</label>
+            <select id="transferFrom"></select>
+            <label>📥 Hacia:</label>
+            <select id="transferTo"></select>
+            <label>💰 Monto:</label>
+            <input type="number" id="transferAmount" step="0.01" min="0.01" placeholder="0.00">
+            <label>📝 Concepto (opcional):</label>
+            <input type="text" id="transferConcept" placeholder="Ej: Transferencia mensual">
+            <button id="doTransferBtn" class="action-btn" style="background:#8b5cf6; margin-top:1rem;">✅ Realizar transferencia</button>
+        </div>
+    </div>
+
+    <!-- Backup -->
+    <div id="tab-backup" class="tab-content">
+        <div class="backup-panel">
+            <h3>💾 Respaldo completo de datos</h3>
+            <p>Exporta todas tus cuentas, movimientos, sesiones y configuraciones a un archivo JSON.</p>
+            <div class="backup-buttons">
+                <button id="exportBackupBtn" class="action-btn" style="background:#3b82f6;">📤 Exportar datos</button>
+                <label for="importBackupInput" class="action-btn" style="background:#8b5cf6; display:inline-block; text-align:center; cursor:pointer;">📂 Importar datos</label>
+                <input type="file" id="importBackupInput" accept=".json" style="display:none;">
+            </div>
+            <p style="font-size:0.7rem; margin-top:1rem;">⚠️ Al importar, todos los datos actuales serán reemplazados.</p>
+        </div>
+    </div>
+
+    <!-- Pruebas -->
+    <div id="tab-tests" class="tab-content">
+        <div id="qunit"></div>
+        <div id="qunit-fixture" style="display:none;"></div>
+    </div>
+    <footer>✅ Backup completo | Fecha y hora | Transferencias | Offline (sin service worker para evitar errores locales)</footer>
+</div>
+
+<!-- Modales -->
+<div id="editModal" class="modal"><div class="modal-content"><h3>✏️ Editar movimiento</h3><label>Concepto</label><input type="text" id="editConcepto"><label>Monto ($)</label><input type="number" id="editMonto" step="0.01" min="0.01"><label>Tipo</label><select id="editTipo"><option value="ingreso">Ingreso</option><option value="gasto">Gasto</option></select><div style="display:flex; gap:10px; margin-top:1rem;"><button id="saveEditBtn" class="small-btn" style="background:#16a34a;">Guardar</button><button id="cancelEditBtn" class="small-btn">Cancelar</button></div></div></div>
+<div id="sessionModal" class="modal"><div class="modal-content"><h3>📋 Detalle de sesión</h3><p><strong>Concepto:</strong> <span id="modalConcepto"></span></p><p><strong>Total:</strong> <span id="modalTotal"></span></p><p><strong>Desglose:</strong></p><div id="modalDenomDetail" class="denom-detail"></div><button id="closeModalBtn" class="small-btn">Cerrar</button></div></div>
+
+<script src="https://code.jquery.com/qunit/qunit-2.19.4.js"></script>
+<script>
+    // Funciones globales
+    window.formatMoney = (val) => new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'USD', minimumFractionDigits: 2 }).format(val);
+    window.calculateBalance = (transactions) => transactions.reduce((acc, t) => acc + (t.tipo === 'ingreso' ? t.monto : -t.monto), 0);
+    window.addTransaction = (transactions, concepto, monto, tipo) => {
+        if (!concepto || concepto.trim() === "") concepto = (tipo === 'ingreso' ? "Ingreso" : "Gasto");
+        if (isNaN(monto) || monto <= 0) return false;
+        const now = new Date();
+        transactions.push({
+            id: Date.now() + Math.random(),
+            concepto: concepto.trim(),
+            monto: monto,
+            tipo: tipo,
+            fechaISO: now.toISOString(),
+            fechaDisplay: now.toLocaleString('es-ES', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit', second:'2-digit' })
+        });
+        return true;
+    };
+    window.updateTransaction = (transactions, id, newConcepto, newMonto, newTipo) => {
+        const idx = transactions.findIndex(t => t.id === id);
+        if (idx === -1) return false;
+        if (!newConcepto || newConcepto.trim() === "") newConcepto = "Editado";
+        if (isNaN(newMonto) || newMonto <= 0) return false;
+        transactions[idx].concepto = newConcepto.trim();
+        transactions[idx].monto = newMonto;
+        transactions[idx].tipo = newTipo;
+        return true;
+    };
+    window.calcularVueltoExacto = (totalPagar, entregado, denoms = [5,10,20,50,100,200,500,1000]) => {
+        const totalCent = Math.round(totalPagar * 100);
+        const entregadoCent = Math.round(entregado * 100);
+        if (entregadoCent < totalCent) return { error: "Insuficiente" };
+        let vueltoCent = entregadoCent - totalCent;
+        if (vueltoCent === 0) return { vuelto: 0, cambio: {} };
+        let restante = vueltoCent;
+        const cambio = {};
+        const sorted = [...denoms].sort((a,b)=>b-a);
+        for (let d of sorted) {
+            const dCent = d * 100;
+            const cant = Math.floor(restante / dCent);
+            if (cant > 0) {
+                cambio[d] = cant;
+                restante -= cant * dCent;
+            }
+        }
+        if (restante > 0) return { error: "No exacto", resto: restante / 100 };
+        return { vuelto: vueltoCent / 100, cambio };
+    };
+
+    // Pruebas QUnit
+    QUnit.module("Core functions");
+    QUnit.test("formatMoney", a => a.ok(window.formatMoney(1234.56).includes("1,234.56")));
+    QUnit.test("calculateBalance", a => a.equal(window.calculateBalance([{tipo:"ingreso",monto:100},{tipo:"gasto",monto:30}]), 70));
+    QUnit.test("addTransaction", a => { let tx = []; a.true(window.addTransaction(tx, "Test", 50, "ingreso")); a.equal(tx.length,1); a.false(window.addTransaction(tx, "Inv", -5, "gasto")); });
+    QUnit.test("updateTransaction", a => { let tx = [{id:1, concepto:"Old", monto:100, tipo:"ingreso"}]; a.true(window.updateTransaction(tx,1,"New",200,"gasto")); a.equal(tx[0].concepto,"New"); a.false(window.updateTransaction(tx,99,"X",10,"ingreso")); });
+    QUnit.test("calcularVueltoExacto", a => { const res = window.calcularVueltoExacto(150,200); a.equal(res.vuelto,50); a.deepEqual(res.cambio,{50:1}); const res2 = window.calcularVueltoExacto(30,100); a.equal(res2.vuelto,70); a.deepEqual(res2.cambio,{50:1,20:1}); const res3 = window.calcularVueltoExacto(99.99,100); a.equal(res3.error,"No exacto"); });
+
+    // ---------- APLICACIÓN PRINCIPAL ----------
+    const denominations = [5, 10, 20, 50, 100, 200, 500, 1000];
+    class CashBox {
+        constructor(name, id = null) {
+            this.id = id || Date.now() + Math.random();
+            this.name = name;
+            this.transactions = [];
+            this.sessions = [];
+            this.quantities = {};
+            denominations.forEach(d => this.quantities[d] = 0);
+        }
+    }
+    let boxes = [];
+    let currentBoxId = null;
+
+    function saveBoxes() {
+        localStorage.setItem('multi_cash_boxes', JSON.stringify(boxes.map(b => ({ ...b, transactions: b.transactions, sessions: b.sessions, quantities: b.quantities }))));
+        localStorage.setItem('currentBoxId', currentBoxId);
+    }
+    function loadBoxes() {
+        const stored = localStorage.getItem('multi_cash_boxes');
+        if (stored) {
+            const parsed = JSON.parse(stored);
+            boxes = parsed.map(b => {
+                const box = new CashBox(b.name, b.id);
+                box.transactions = b.transactions;
+                box.sessions = b.sessions;
+                box.quantities = b.quantities;
+                return box;
+            });
+        } else {
+            const defaultBox = new CashBox("Personal");
+            defaultBox.transactions = [{ id: Date.now()+1, concepto: "Saldo inicial", monto: 500, tipo: "ingreso", fechaISO: new Date().toISOString(), fechaDisplay: new Date().toLocaleString('es-ES', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit', second:'2-digit' }) }];
+            boxes = [defaultBox];
+        }
+        currentBoxId = localStorage.getItem('currentBoxId') || boxes[0]?.id || null;
+        if (!boxes.find(b => b.id == currentBoxId)) currentBoxId = boxes[0]?.id;
+    }
+    function getCurrentBox() { return boxes.find(b => b.id == currentBoxId); }
+
+    function escapeHtml(str) { return str ? str.replace(/[&<>]/g, m => m === '&' ? '&amp;' : m === '<' ? '&lt;' : '&gt;') : ''; }
+
+    // Calculadora
+    function handleQuantityChange(den, val) {
+        const box = getCurrentBox();
+        if (!box) return;
+        let raw = parseInt(val);
+        if (isNaN(raw) || raw < 0) raw = 0;
+        box.quantities[den] = raw;
+        updateCalculatorUI();
+        saveBoxes();
+    }
+    function updateCalculatorUI() {
+        const box = getCurrentBox();
+        if (!box) return;
+        let total = 0, totalBills = 0;
+        for (let d of denominations) {
+            const q = box.quantities[d] || 0;
+            total += d * q;
+            totalBills += q;
+            const span = document.getElementById(`subtotal-${d}`);
+            if (span) span.textContent = window.formatMoney(d * q);
+            const inp = document.getElementById(`input-${d}`);
+            if (inp && inp.value != q) inp.value = q;
+        }
+        document.getElementById('totalGeneral').textContent = window.formatMoney(total);
+        document.getElementById('totalBilletes').textContent = totalBills;
+        window.currentTotal = total;
+    }
+    function clearAllQuantities() {
+        const box = getCurrentBox();
+        if (!box) return;
+        for (let d of denominations) box.quantities[d] = 0;
+        updateCalculatorUI();
+        saveBoxes();
+    }
+    function buildDenomTable() {
+        const tbody = document.getElementById('denomTableBody');
+        tbody.innerHTML = '';
+        for (let d of denominations) {
+            const row = document.createElement('tr');
+            row.innerHTML = `<td>$${d}</td><td><input type="number" min="0" step="1" id="input-${d}" value="0"></td><td><span id="subtotal-${d}">$0.00</span></td>`;
+            tbody.appendChild(row);
+            const input = document.getElementById(`input-${d}`);
+            input.addEventListener('input', (e) => handleQuantityChange(d, e.target.value));
+        }
+    }
+    function registerFromCalculator(tipo) {
+        const box = getCurrentBox();
+        if (!window.currentTotal || window.currentTotal <= 0) { alert("No hay efectivo contado."); return; }
+        let concepto = prompt(`Concepto para ${tipo === 'ingreso' ? 'INGRESO' : 'GASTO'} de ${window.formatMoney(window.currentTotal)}:`, tipo === 'ingreso' ? "Ingreso efectivo" : "Gasto efectivo");
+        if (!concepto) return;
+        window.addTransaction(box.transactions, concepto, window.currentTotal, tipo);
+        const session = {
+            id: Date.now() + Math.random(),
+            fecha: new Date().toLocaleString('es-ES', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit', second:'2-digit' }),
+            tipo: tipo,
+            total: window.currentTotal,
+            concepto: concepto.trim(),
+            denominationsCount: { ...box.quantities }
+        };
+        box.sessions.push(session);
+        saveBoxes();
+        if (confirm("¿Limpiar cantidades?")) clearAllQuantities();
+        refreshAll();
+    }
+
+    // Libro de cuentas
+    function renderLedger() {
+        const container = document.getElementById('transaccionesContainer');
+        const box = getCurrentBox();
+        if (!box || box.transactions.length === 0) { container.innerHTML = '<div class="empty-message">No hay movimientos.</div>'; return; }
+        let html = '';
+        [...box.transactions].sort((a,b)=>new Date(b.fechaISO)-new Date(a.fechaISO)).forEach(t => {
+            html += `<div class="transaccion-item">
+                <div>${escapeHtml(t.concepto)}</div>
+                <div><span class="tipo-badge ${t.tipo}">${t.tipo === 'ingreso' ? 'Ingreso' : 'Gasto'}</span></div>
+                <div style="${t.tipo==='ingreso'?'color:#a3e635':'color:#f87171'}">${t.tipo==='ingreso'?'+':'-'} ${window.formatMoney(t.monto)}</div>
+                <div style="font-size:0.7rem;">${escapeHtml(t.fechaDisplay)}</div>
+                <div><button class="edit-btn" data-id="${t.id}">✏️</button><button class="delete-btn" data-id="${t.id}">🗑️</button></div>
+            </div>`;
+        });
+        container.innerHTML = html;
+        document.querySelectorAll('.edit-btn').forEach(btn => btn.addEventListener('click', (e) => openEditModal(Number(btn.getAttribute('data-id')))));
+        document.querySelectorAll('.delete-btn').forEach(btn => btn.addEventListener('click', (e) => { if(confirm("¿Eliminar?")) { box.transactions = box.transactions.filter(t => t.id !== Number(btn.getAttribute('data-id'))); saveBoxes(); refreshAll(); } }));
+    }
+    function openEditModal(id) {
+        const box = getCurrentBox();
+        const trans = box.transactions.find(t => t.id === id);
+        if (!trans) return;
+        document.getElementById('editConcepto').value = trans.concepto;
+        document.getElementById('editMonto').value = trans.monto;
+        document.getElementById('editTipo').value = trans.tipo;
+        window.editId = id;
+        document.getElementById('editModal').style.display = 'flex';
+    }
+    function saveEdit() {
+        const id = window.editId;
+        const newConcepto = document.getElementById('editConcepto').value;
+        const newMonto = parseFloat(document.getElementById('editMonto').value);
+        const newTipo = document.getElementById('editTipo').value;
+        const box = getCurrentBox();
+        if (window.updateTransaction(box.transactions, id, newConcepto, newMonto, newTipo)) {
+            saveBoxes();
+            refreshAll();
+            document.getElementById('editModal').style.display = 'none';
+        } else alert("Monto inválido (positivo)");
+    }
+    function renderSessions() {
+        const container = document.getElementById('sesionesContainer');
+        const box = getCurrentBox();
+        if (!box || box.sessions.length === 0) { container.innerHTML = '<div class="empty-message">No hay sesiones.</div>'; return; }
+        let html = '';
+        [...box.sessions].reverse().forEach(s => {
+            html += `<div class="sesion-item">
+                <div style="font-size:0.7rem;">${escapeHtml(s.fecha)}</div>
+                <div><span class="tipo-badge ${s.tipo}">${s.tipo === 'ingreso' ? 'Ingreso' : 'Gasto'}</span></div>
+                <div>${window.formatMoney(s.total)}</div>
+                <div>${escapeHtml(s.concepto)}</div>
+                <div><button class="detail-btn" data-id="${s.id}">🔍</button></div>
+            </div>`;
+        });
+        container.innerHTML = html;
+        document.querySelectorAll('.detail-btn').forEach(btn => btn.addEventListener('click', (e) => { const id = Number(btn.getAttribute('data-id')); const session = box.sessions.find(s => s.id === id); if(session) showSessionDetail(session); }));
+    }
+    function showSessionDetail(session) {
+        document.getElementById('modalConcepto').textContent = session.concepto;
+        document.getElementById('modalTotal').textContent = window.formatMoney(session.total);
+        const container = document.getElementById('modalDenomDetail');
+        container.innerHTML = '';
+        for (let [den, qty] of Object.entries(session.denominationsCount)) if (qty > 0) container.innerHTML += `<span class="denom-chip">$${den} x ${qty} = ${window.formatMoney(den * qty)}</span>`;
+        document.getElementById('sessionModal').style.display = 'flex';
+    }
+    function calcularVuelto() {
+        const total = parseFloat(document.getElementById('totalPagar').value);
+        const entregado = parseFloat(document.getElementById('efectivoEntregado').value);
+        if (isNaN(total) || isNaN(entregado)) { alert("Ingrese números"); return; }
+        const res = window.calcularVueltoExacto(total, entregado, denominations);
+        const div = document.getElementById('vueltoResultado');
+        if (res.error === "Insuficiente") { div.innerHTML = "<strong>Efectivo insuficiente</strong>"; return; }
+        if (res.error === "No exacto") { div.innerHTML = `<strong>⚠️ No se puede dar cambio exacto. Sobran ${window.formatMoney(res.resto)}</strong>`; return; }
+        let html = `<strong>Vuelto: ${window.formatMoney(res.vuelto)}</strong><br><div class="denom-detail">`;
+        for (let [d, cant] of Object.entries(res.cambio)) html += `<span class="denom-chip">$${d} x ${cant} = ${window.formatMoney(d * cant)}</span>`;
+        html += `</div>`;
+        div.innerHTML = html;
+    }
+
+    // Transferencia entre cuentas
+    function updateTransferSelectors() {
+        const fromSelect = document.getElementById('transferFrom');
+        const toSelect = document.getElementById('transferTo');
+        const options = boxes.map(b => `<option value="${b.id}">${escapeHtml(b.name)}</option>`).join('');
+        fromSelect.innerHTML = options;
+        toSelect.innerHTML = options;
+        fromSelect.addEventListener('change', () => { if (fromSelect.value === toSelect.value) { const other = boxes.find(b => b.id != fromSelect.value); if (other) toSelect.value = other.id; } });
+        toSelect.addEventListener('change', () => { if (toSelect.value === fromSelect.value) { const other = boxes.find(b => b.id != toSelect.value); if (other) fromSelect.value = other.id; } });
+    }
+    function realizarTransferencia() {
+        const fromId = Number(document.getElementById('transferFrom').value);
+        const toId = Number(document.getElementById('transferTo').value);
+        const monto = parseFloat(document.getElementById('transferAmount').value);
+        let concepto = document.getElementById('transferConcept').value.trim();
+        if (fromId === toId) { alert("No puedes transferir a la misma cuenta"); return; }
+        if (isNaN(monto) || monto <= 0) { alert("Monto inválido"); return; }
+        const fromBox = boxes.find(b => b.id === fromId);
+        const toBox = boxes.find(b => b.id === toId);
+        if (!fromBox || !toBox) return;
+        const saldoOrigen = window.calculateBalance(fromBox.transactions);
+        if (saldoOrigen < monto && !confirm(`Saldo insuficiente (${window.formatMoney(saldoOrigen)}). ¿Deseas continuar?`)) return;
+        if (!concepto) concepto = `Transferencia a ${toBox.name}`;
+        window.addTransaction(fromBox.transactions, `(Transferencia) ${concepto}`, monto, 'gasto');
+        window.addTransaction(toBox.transactions, `(Transferencia) ${concepto} desde ${fromBox.name}`, monto, 'ingreso');
+        saveBoxes();
+        alert("Transferencia realizada con éxito");
+        refreshAll();
+        updateTransferSelectors();
+        document.getElementById('transferAmount').value = '';
+        document.getElementById('transferConcept').value = '';
+    }
+
+    // Backup: exportar e importar
+    function exportBackup() {
+        const backupData = {
+            version: "1.0",
+            fechaExportacion: new Date().toISOString(),
+            boxes: boxes.map(b => ({
+                id: b.id,
+                name: b.name,
+                transactions: b.transactions,
+                sessions: b.sessions,
+                quantities: b.quantities
+            })),
+            currentBoxId: currentBoxId
+        };
+        const dataStr = JSON.stringify(backupData, null, 2);
+        const blob = new Blob([dataStr], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `multicajas_backup_${new Date().toISOString().slice(0,19).replace(/:/g, '-')}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        alert("Backup exportado correctamente.");
+    }
+    function importBackup(file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            try {
+                const backupData = JSON.parse(e.target.result);
+                if (!backupData.boxes || !Array.isArray(backupData.boxes)) throw new Error("Formato inválido");
+                boxes = backupData.boxes.map(b => {
+                    const box = new CashBox(b.name, b.id);
+                    box.transactions = b.transactions || [];
+                    box.sessions = b.sessions || [];
+                    box.quantities = b.quantities || {};
+                    denominations.forEach(d => { if (box.quantities[d] === undefined) box.quantities[d] = 0; });
+                    return box;
+                });
+                currentBoxId = backupData.currentBoxId;
+                if (!boxes.find(b => b.id == currentBoxId)) currentBoxId = boxes[0]?.id || null;
+                saveBoxes();
+                refreshAll();
+                updateTransferSelectors();
+                alert("Backup restaurado correctamente.");
+            } catch(err) {
+                alert("Error al leer el archivo de backup: " + err.message);
+            }
+        };
+        reader.readAsText(file);
+    }
+
+    // Gestión de cajas
+    function newBox() { let name = prompt("Nombre nueva cuenta:"); if(name) { const nb = new CashBox(name); boxes.push(nb); currentBoxId = nb.id; saveBoxes(); refreshAll(); updateTransferSelectors(); } }
+    function renameBox() { const box = getCurrentBox(); if(box) { let nn = prompt("Nuevo nombre:", box.name); if(nn) { box.name = nn; saveBoxes(); refreshAll(); updateTransferSelectors(); } } }
+    function deleteBox() { if(boxes.length===1) { alert("Debe haber al menos una cuenta"); return; } const box = getCurrentBox(); if(box && confirm(`¿Eliminar "${box.name}"?`)) { boxes = boxes.filter(b=>b.id!==box.id); currentBoxId = boxes[0].id; saveBoxes(); refreshAll(); updateTransferSelectors(); } }
+    function loadExample() {
+        const box = getCurrentBox();
+        if(!box) return;
+        const ejemplos = [{ concepto: "Sueldo", monto: 1850, tipo: "ingreso" }, { concepto: "Super", monto: 112.3, tipo: "gasto" }];
+        for(let ex of ejemplos) window.addTransaction(box.transactions, ex.concepto, ex.monto, ex.tipo);
+        saveBoxes(); refreshAll();
+    }
+    function refreshAll() {
+        const box = getCurrentBox();
+        if (!box) return;
+        const select = document.getElementById('boxSelect');
+        select.innerHTML = boxes.map(b => `<option value="${b.id}" ${b.id == currentBoxId ? 'selected' : ''}>${escapeHtml(b.name)}</option>`).join('');
+        const saldo = window.calculateBalance(box.transactions);
+        const balEl = document.getElementById('globalBalance');
+        balEl.textContent = window.formatMoney(saldo);
+        balEl.className = 'balance-amount ' + (saldo >= 0 ? 'positive' : 'negative');
+        updateCalculatorUI();
+        renderLedger();
+        renderSessions();
+        updateTransferSelectors();
+    }
+    function setupTabs() {
+        const tabs = ['calculator', 'ledger', 'sessions', 'change', 'transfer', 'backup', 'tests'];
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const tabId = btn.getAttribute('data-tab');
+                tabs.forEach(t => document.getElementById(`tab-${t}`).classList.toggle('active', t === tabId));
+                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                if(tabId === 'tests') QUnit.start();
+            });
+        });
+    }
+    function bindEvents() {
+        document.getElementById('clearAllDenoms').addEventListener('click', clearAllQuantities);
+        document.getElementById('registerIncome').addEventListener('click', () => registerFromCalculator('ingreso'));
+        document.getElementById('registerExpense').addEventListener('click', () => registerFromCalculator('gasto'));
+        document.getElementById('loadExampleBtn').addEventListener('click', loadExample);
+        document.getElementById('calcularVueltoBtn').addEventListener('click', calcularVuelto);
+        document.getElementById('newBoxBtn').addEventListener('click', newBox);
+        document.getElementById('renameBoxBtn').addEventListener('click', renameBox);
+        document.getElementById('deleteBoxBtn').addEventListener('click', deleteBox);
+        document.getElementById('boxSelect').addEventListener('change', (e) => { currentBoxId = Number(e.target.value); saveBoxes(); refreshAll(); });
+        document.getElementById('saveEditBtn').addEventListener('click', saveEdit);
+        document.getElementById('cancelEditBtn').addEventListener('click', () => document.getElementById('editModal').style.display = 'none');
+        document.getElementById('closeModalBtn').addEventListener('click', () => document.getElementById('sessionModal').style.display = 'none');
+        document.getElementById('doTransferBtn').addEventListener('click', realizarTransferencia);
+        document.getElementById('exportBackupBtn').addEventListener('click', exportBackup);
+        document.getElementById('importBackupInput').addEventListener('change', (e) => { if(e.target.files.length) importBackup(e.target.files[0]); e.target.value = ''; });
+        window.addEventListener('click', (e) => { if (e.target === document.getElementById('editModal')) document.getElementById('editModal').style.display = 'none'; if (e.target === document.getElementById('sessionModal')) document.getElementById('sessionModal').style.display = 'none'; });
+    }
+
+    // Inicializar
+    loadBoxes();
+    buildDenomTable();
+    setupTabs();
+    bindEvents();
+    refreshAll();
+    updateTransferSelectors();
+</script>
+</body>
+</html>
