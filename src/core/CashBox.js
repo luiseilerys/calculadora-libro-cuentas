@@ -61,7 +61,7 @@ class CashBox {
      * Actualiza una transacción existente
      */
     updateTransaction(id, newConcepto, newMonto, newTipo) {
-        const idx = this.transactions.findIndex(t => t.id === id);
+        const idx = this.transactions.findIndex(t => String(t.id) === String(id));
         if (idx === -1) return false;
 
         if (!newConcepto || newConcepto.trim() === '') {
@@ -85,7 +85,7 @@ class CashBox {
      */
     deleteTransaction(id) {
         const initialLength = this.transactions.length;
-        this.transactions = this.transactions.filter(t => t.id !== id);
+        this.transactions = this.transactions.filter(t => String(t.id) !== String(id));
         return this.transactions.length < initialLength;
     }
 

@@ -55,7 +55,7 @@ const LedgerUI = {
         // Eventos de editar
         document.querySelectorAll('.edit-btn').forEach(btn => {
             btn.addEventListener('click', () => {
-                const id = parseFloat(btn.getAttribute('data-id'));
+                const id = btn.getAttribute('data-id');
                 this.openEditModal(id, box);
             });
         });
@@ -63,7 +63,7 @@ const LedgerUI = {
         // Eventos de eliminar
         document.querySelectorAll('.delete-btn').forEach(btn => {
             btn.addEventListener('click', () => {
-                const id = parseFloat(btn.getAttribute('data-id'));
+                const id = btn.getAttribute('data-id');
                 if (confirm('¿Eliminar movimiento?')) {
                     box.deleteTransaction(id);
                     this.renderLedger(box);
@@ -76,7 +76,7 @@ const LedgerUI = {
      * Abre el modal de edición
      */
     openEditModal(id, box) {
-        const trans = box.transactions.find(t => t.id === id);
+        const trans = box.transactions.find(t => String(t.id) === String(id));
         if (!trans) return;
 
         document.getElementById('editConcepto').value = trans.concepto;

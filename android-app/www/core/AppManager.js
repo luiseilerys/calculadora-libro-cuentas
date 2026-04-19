@@ -38,7 +38,7 @@ const AppManager = {
      * Obtiene la caja actual
      */
     getCurrentBox() {
-        return this.boxes.find(b => b.id === this.currentBoxId);
+        return this.boxes.find(b => String(b.id) === String(this.currentBoxId));
     },
 
     /**
@@ -76,7 +76,7 @@ const AppManager = {
         if (!select) return;
 
         select.innerHTML = this.boxes.map(b => 
-            `<option value="${b.id}" ${b.id === this.currentBoxId ? 'selected' : ''}>
+            `<option value="${b.id}" ${String(b.id) === String(this.currentBoxId) ? 'selected' : ''}>
                 ${Utils.escapeHtml(b.name)}
             </option>`
         ).join('');
@@ -298,7 +298,7 @@ const AppManager = {
 
         const box = this.getCurrentBox();
         if (box && confirm(`¿Eliminar "${box.name}"?`)) {
-            this.boxes = this.boxes.filter(b => b.id !== box.id);
+            this.boxes = this.boxes.filter(b => String(b.id) !== String(box.id));
             this.currentBoxId = this.boxes[0].id;
             this.saveState();
             this.renderAll();
@@ -361,7 +361,7 @@ const AppManager = {
                 this.currentBoxId = backupData.currentBoxId;
                 
                 // Validar caja actual
-                if (!this.boxes.find(b => b.id === this.currentBoxId)) {
+                if (!this.boxes.find(b => String(b.id) === String(this.currentBoxId))) {
                     this.currentBoxId = this.boxes[0]?.id || null;
                 }
 

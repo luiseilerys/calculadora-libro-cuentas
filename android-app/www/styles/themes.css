@@ -1,0 +1,41 @@
+:root {
+  /* Light mode variables */
+  --background-color-light: #ffffff;
+  --text-color-light: #000000;
+  --primary-color-light: #6200ee;
+  --secondary-color-light: #03dac6;
+
+  /* Dark mode variables */
+  --background-color-dark: #121212;
+  --text-color-dark: #ffffff;
+  --primary-color-dark: #bb86fc;
+  --secondary-color-dark: #03dac6;
+}
+
+/* Light mode styles */
+@media (prefers-color-scheme: light) {
+  body {
+    background-color: var(--background-color-light);
+    color: var(--text-color-light);
+  }
+  .primary {
+    background-color: var(--primary-color-light);
+  }
+  .secondary {
+    background-color: var(--secondary-color-light);
+  }
+}
+
+/* Dark mode styles */
+@media (prefers-color-scheme: dark) {
+  body {
+    background-color: var(--background-color-dark);
+    color: var(--text-color-dark);
+  }
+  .primary {
+    background-color: var(--primary-color-dark);
+  }
+  .secondary {
+    background-color: var(--secondary-color-dark);
+  }
+}
