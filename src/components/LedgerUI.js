@@ -55,7 +55,7 @@ const LedgerUI = {
         // Eventos de editar
         document.querySelectorAll('.edit-btn').forEach(btn => {
             btn.addEventListener('click', () => {
-                const id = Number(btn.getAttribute('data-id'));
+                const id = parseFloat(btn.getAttribute('data-id'));
                 this.openEditModal(id, box);
             });
         });
@@ -63,7 +63,7 @@ const LedgerUI = {
         // Eventos de eliminar
         document.querySelectorAll('.delete-btn').forEach(btn => {
             btn.addEventListener('click', () => {
-                const id = Number(btn.getAttribute('data-id'));
+                const id = parseFloat(btn.getAttribute('data-id'));
                 if (confirm('¿Eliminar movimiento?')) {
                     box.deleteTransaction(id);
                     this.renderLedger(box);
@@ -83,7 +83,7 @@ const LedgerUI = {
         document.getElementById('editMonto').value = trans.monto;
         document.getElementById('editTipo').value = trans.tipo;
 
-        window.editId = id;
+        this.currentEditId = id;
         document.getElementById('editModal').style.display = 'flex';
     },
 
@@ -91,19 +91,19 @@ const LedgerUI = {
      * Guarda los cambios del modal de edición
      */
     saveEdit(box, refreshCallback) {
-        const id = window.editId;
+        const id = this.currentEditId;
         const newConcepto = document.getElementById('editConcepto').value;
         const newMonto = parseFloat(document.getElementById('editMonto').value);
         const newTipo = document.getElementById('editTipo').value;
 
-        if (box.updateTransaction(id, newConcepto, newMonto, newTipo)) {
-            if (refreshCallback) refreshCallback();
-            document.getElementById('editModal').style.display = 'none';
-            return true;
-        } else {
+        if (!id || !box.updateTransaction(id, newConcepto, newMonto, newTipo)) {
             alert('Monto inválido (debe ser positivo)');
             return false;
         }
+        
+        if (refreshCallback) refreshCallback();
+        document.getElementById('editModal').style.display = 'none';
+        return true;
     }
 };
 

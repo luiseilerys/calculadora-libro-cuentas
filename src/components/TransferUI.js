@@ -29,14 +29,14 @@ const TransferUI = {
     bindTransferSelectorEvents(fromSelect, toSelect, boxes) {
         fromSelect.addEventListener('change', () => {
             if (fromSelect.value === toSelect.value) {
-                const other = boxes.find(b => b.id != fromSelect.value);
+                const other = boxes.find(b => b.id !== parseFloat(fromSelect.value));
                 if (other) toSelect.value = other.id;
             }
         });
 
         toSelect.addEventListener('change', () => {
             if (toSelect.value === fromSelect.value) {
-                const other = boxes.find(b => b.id != toSelect.value);
+                const other = boxes.find(b => b.id !== parseFloat(toSelect.value));
                 if (other) fromSelect.value = other.id;
             }
         });
@@ -46,8 +46,8 @@ const TransferUI = {
      * Realiza una transferencia entre cuentas
      */
     realizarTransferencia(boxes, currentBoxId, refreshCallback) {
-        const fromId = Number(document.getElementById('transferFrom').value);
-        const toId = Number(document.getElementById('transferTo').value);
+        const fromId = parseFloat(document.getElementById('transferFrom').value);
+        const toId = parseFloat(document.getElementById('transferTo').value);
         const monto = parseFloat(document.getElementById('transferAmount').value);
         let concepto = document.getElementById('transferConcept').value.trim();
 
