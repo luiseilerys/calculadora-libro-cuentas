@@ -14,6 +14,7 @@ const AppManager = {
         this.loadState();
         this.bindGlobalEvents();
         this.setupTabs();
+        CalculatorUI.buildDenomTable();
         this.renderAll();
     },
 
@@ -37,7 +38,7 @@ const AppManager = {
      * Obtiene la caja actual
      */
     getCurrentBox() {
-        return this.boxes.find(b => b.id == this.currentBoxId);
+        return this.boxes.find(b => b.id === this.currentBoxId);
     },
 
     /**
@@ -75,7 +76,7 @@ const AppManager = {
         if (!select) return;
 
         select.innerHTML = this.boxes.map(b => 
-            `<option value="${b.id}" ${b.id == this.currentBoxId ? 'selected' : ''}>
+            `<option value="${b.id}" ${b.id === this.currentBoxId ? 'selected' : ''}>
                 ${Utils.escapeHtml(b.name)}
             </option>`
         ).join('');
@@ -125,47 +126,68 @@ const AppManager = {
      */
     bindGlobalEvents() {
         // Selector de caja
-        document.getElementById('boxSelect').addEventListener('change', (e) => {
-            this.currentBoxId = Number(e.target.value);
-            this.saveState();
-            this.renderAll();
-        });
+        const boxSelect = document.getElementById('boxSelect');
+        if (boxSelect) {
+            boxSelect.addEventListener('change', (e) => {
+                this.currentBoxId = Number(e.target.value);
+                this.saveState();
+                this.renderAll();
+            });
+        }
 
         // Botones de gestión de cajas
-        document.getElementById('newBoxBtn').addEventListener('click', () => this.newBox());
-        document.getElementById('renameBoxBtn').addEventListener('click', () => this.renameBox());
-        document.getElementById('deleteBoxBtn').addEventListener('click', () => this.deleteBox());
+        const newBoxBtn = document.getElementById('newBoxBtn');
+        if (newBoxBtn) newBoxBtn.addEventListener('click', () => this.newBox());
+        
+        const renameBoxBtn = document.getElementById('renameBoxBtn');
+        if (renameBoxBtn) renameBoxBtn.addEventListener('click', () => this.renameBox());
+        
+        const deleteBoxBtn = document.getElementById('deleteBoxBtn');
+        if (deleteBoxBtn) deleteBoxBtn.addEventListener('click', () => this.deleteBox());
 
         // Calculadora
-        document.getElementById('clearAllDenoms').addEventListener('click', () => {
+        const clearAllDenoms = document.getElementById('clearAllDenoms');
+        if (clearAllDenoms) clearAllDenoms.addEventListener('click', () => {
             CalculatorUI.clearAllQuantities(this.getCurrentBox());
             this.saveState();
         });
-        document.getElementById('registerIncome').addEventListener('click', () => this.registerFromCalculator('ingreso'));
-        document.getElementById('registerExpense').addEventListener('click', () => this.registerFromCalculator('gasto'));
+        
+        const registerIncome = document.getElementById('registerIncome');
+        if (registerIncome) registerIncome.addEventListener('click', () => this.registerFromCalculator('ingreso'));
+        
+        const registerExpense = document.getElementById('registerExpense');
+        if (registerExpense) registerExpense.addEventListener('click', () => this.registerFromCalculator('gasto'));
 
         // Libro de cuentas
-        document.getElementById('loadExampleBtn').addEventListener('click', () => this.loadExample());
-        document.getElementById('saveEditBtn').addEventListener('click', () => {
+        const loadExampleBtn = document.getElementById('loadExampleBtn');
+        if (loadExampleBtn) loadExampleBtn.addEventListener('click', () => this.loadExample());
+        
+        const saveEditBtn = document.getElementById('saveEditBtn');
+        if (saveEditBtn) saveEditBtn.addEventListener('click', () => {
             LedgerUI.saveEdit(this.getCurrentBox(), () => {
                 this.saveState();
                 this.renderAll();
             });
         });
-        document.getElementById('cancelEditBtn').addEventListener('click', () => {
+        
+        const cancelEditBtn = document.getElementById('cancelEditBtn');
+        if (cancelEditBtn) cancelEditBtn.addEventListener('click', () => {
             document.getElementById('editModal').style.display = 'none';
         });
 
         // Sesiones
-        document.getElementById('closeModalBtn').addEventListener('click', () => {
+        const closeModalBtn = document.getElementById('closeModalBtn');
+        if (closeModalBtn) closeModalBtn.addEventListener('click', () => {
             document.getElementById('sessionModal').style.display = 'none';
         });
 
         // Vuelto
-        document.getElementById('calcularVueltoBtn').addEventListener('click', () => ChangeUI.calcularVuelto());
+        const calcularVueltoBtn = document.getElementById('calcularVueltoBtn');
+        if (calcularVueltoBtn) calcularVueltoBtn.addEventListener('click', () => ChangeUI.calcularVuelto());
 
         // Transferencias
-        document.getElementById('doTransferBtn').addEventListener('click', () => {
+        const doTransferBtn = document.getElementById('doTransferBtn');
+        if (doTransferBtn) doTransferBtn.addEventListener('click', () => {
             if (TransferUI.realizarTransferencia(this.boxes, this.currentBoxId, () => {
                 this.saveState();
                 this.renderAll();
@@ -175,21 +197,28 @@ const AppManager = {
         });
 
         // Backup
-        document.getElementById('exportBackupBtn').addEventListener('click', () => this.exportBackup());
-        document.getElementById('importBackupInput').addEventListener('change', (e) => {
-            if (e.target.files.length) {
-                this.importBackup(e.target.files[0]);
-            }
-            e.target.value = '';
-        });
+        const exportBackupBtn = document.getElementById('exportBackupBtn');
+        if (exportBackupBtn) exportBackupBtn.addEventListener('click', () => this.exportBackup());
+        
+        const importBackupInput = document.getElementById('importBackupInput');
+        if (importBackupInput) {
+            importBackupInput.addEventListener('change', (e) => {
+                if (e.target.files.length) {
+                    this.importBackup(e.target.files[0]);
+                }
+                e.target.value = '';
+            });
+        }
 
         // Cerrar modales al hacer click fuera
         window.addEventListener('click', (e) => {
-            if (e.target === document.getElementById('editModal')) {
-                document.getElementById('editModal').style.display = 'none';
+            const editModal = document.getElementById('editModal');
+            const sessionModal = document.getElementById('sessionModal');
+            if (e.target === editModal) {
+                editModal.style.display = 'none';
             }
-            if (e.target === document.getElementById('sessionModal')) {
-                document.getElementById('sessionModal').style.display = 'none';
+            if (e.target === sessionModal) {
+                sessionModal.style.display = 'none';
             }
         });
     },
@@ -332,7 +361,7 @@ const AppManager = {
                 this.currentBoxId = backupData.currentBoxId;
                 
                 // Validar caja actual
-                if (!this.boxes.find(b => b.id == this.currentBoxId)) {
+                if (!this.boxes.find(b => b.id === this.currentBoxId)) {
                     this.currentBoxId = this.boxes[0]?.id || null;
                 }
 

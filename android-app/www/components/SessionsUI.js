@@ -1,5 +1,6 @@
 /**
  * Componente de UI - Sesiones
+ * Usa enteros (centavos) para mostrar montos
  */
 
 const SessionsUI = {
@@ -26,7 +27,7 @@ const SessionsUI = {
                             ${s.tipo === 'ingreso' ? 'Ingreso' : 'Gasto'}
                         </span>
                     </div>
-                    <div>${Utils.formatMoney(s.total)}</div>
+                    <div>${Utils.formatMoney(s.totalCents, true)}</div>
                     <div>${Utils.escapeHtml(s.concepto)}</div>
                     <div>
                         <button class="detail-btn" data-id="${s.id}">🔍</button>
@@ -45,7 +46,7 @@ const SessionsUI = {
     bindSessionsEvents(box) {
         document.querySelectorAll('.detail-btn').forEach(btn => {
             btn.addEventListener('click', () => {
-                const id = Number(btn.getAttribute('data-id'));
+                const id = parseFloat(btn.getAttribute('data-id'));
                 const session = box.sessions.find(s => s.id === id);
                 if (session) {
                     this.showSessionDetail(session);
@@ -59,16 +60,17 @@ const SessionsUI = {
      */
     showSessionDetail(session) {
         document.getElementById('modalConcepto').textContent = session.concepto;
-        document.getElementById('modalTotal').textContent = Utils.formatMoney(session.total);
+        document.getElementById('modalTotal').textContent = Utils.formatMoney(session.totalCents, true);
 
         const container = document.getElementById('modalDenomDetail');
         container.innerHTML = '';
 
         for (let [den, qty] of Object.entries(session.denominationsCount)) {
             if (qty > 0) {
+                const subtotalCents = Utils.dollarsToCents(den) * qty;
                 container.innerHTML += `
                     <span class="denom-chip">
-                        $${den} x ${qty} = ${Utils.formatMoney(den * qty)}
+                        $${den} x ${qty} = ${Utils.formatMoney(subtotalCents, true)}
                     </span>
                 `;
             }
