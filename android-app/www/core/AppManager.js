@@ -228,7 +228,16 @@ const AppManager = {
      */
     registerFromCalculator(tipo) {
         const box = this.getCurrentBox();
-        const total = CalculatorUI.getCurrentTotal();
+        
+        // Calcular total directamente desde las cantidades de la caja
+        let totalCents = 0;
+        for (let d of Config.denominations) {
+            const q = box.quantities[d] || 0;
+            const denomCents = Utils.dollarsToCents(d);
+            totalCents += denomCents * q;
+        }
+        
+        const total = Utils.centsToDollars(totalCents);
 
         if (!total || total <= 0) {
             alert('No hay efectivo contado.');
