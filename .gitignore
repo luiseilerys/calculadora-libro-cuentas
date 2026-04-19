@@ -1,6 +1,8 @@
 ```
 # Build artifacts
-www/
+dist/
+build/
+*.js.map
 
 # Dependencies
 node_modules/
@@ -14,10 +16,12 @@ node_modules/
 .vscode/
 .idea/
 
-# Logs
+# Logs and temp files
 *.log
-
-# Temporary files
 *.tmp
 *.swp
+
+# OS generated files
+.DS_Store
+Thumbs.db
 ```

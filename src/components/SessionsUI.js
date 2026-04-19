@@ -46,8 +46,8 @@ const SessionsUI = {
     bindSessionsEvents(box) {
         document.querySelectorAll('.detail-btn').forEach(btn => {
             btn.addEventListener('click', () => {
-                const id = parseFloat(btn.getAttribute('data-id'));
-                const session = box.sessions.find(s => s.id === id);
+                const id = btn.getAttribute('data-id');
+                const session = box.sessions.find(s => String(s.id) === String(id));
                 if (session) {
                     this.showSessionDetail(session);
                 }

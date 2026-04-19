@@ -1,5 +1,6 @@
 /**
  * Componente de UI - Calculadora de vuelto
+ * Usa enteros (centavos) para evitar errores de punto flotante
  */
 
 const ChangeUI = {
@@ -33,14 +34,15 @@ const ChangeUI = {
             return;
         }
 
-        // Construir HTML del desglose
-        let html = `<strong>✅ Vuelto: ${Utils.formatMoney(res.vuelto)}</strong><br>`;
+        // Construir HTML del desglose usando valores en centavos
+        let html = `<strong>✅ Vuelto: ${Utils.formatMoney(res.vueltoCents, true)}</strong><br>`;
         html += '<div class="denom-detail">';
 
         for (let [d, cant] of Object.entries(res.cambio)) {
+            const subtotalCents = Utils.dollarsToCents(d) * cant;
             html += `
                 <span class="denom-chip">
-                    $${d} x ${cant} = ${Utils.formatMoney(d * cant)}
+                    $${d} x ${cant} = ${Utils.formatMoney(subtotalCents, true)}
                 </span>
             `;
         }
